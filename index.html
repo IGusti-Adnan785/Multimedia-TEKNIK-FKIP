@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Math FPS: Operasi Rimba (Final Release)</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; touch-action: none; color: #eee; }
+        #uiLayer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; user-select: none; }
+        
+        #musicToggle {
+            position: absolute; top: 20px; right: 20px; width: 50px; height: 50px;
+            background: rgba(0, 0, 0, 0.6); border: 2px solid #f1c40f; border-radius: 50%;
+            color: #f1c40f; font-size: 24px; cursor: pointer; pointer-events: auto; z-index: 100;
+            display: flex; justify-content: center; align-items: center; transition: transform 0.1s, background 0.3s; backdrop-filter: blur(5px);
+            box-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
+        }
+        #musicToggle:active { transform: scale(0.9); }
+
+        #crosshair { 
+            position: absolute; top: 50%; left: 50%; width: 4px; height: 4px; 
+            background: #ff0000; border-radius: 50%; transform: translate(-50%, -50%); 
+            box-shadow: 0 0 10px #ff0000; z-index: 5; 
+        }
+        #crosshair::before { content: ''; position: absolute; top: -12px; left: -12px; width: 24px; height: 24px; border: 2px solid rgba(255, 50, 50, 0.8); border-radius: 50%; box-sizing: border-box; }
+
+        #compass-arrow {
+            position: absolute; top: 50%; left: 50%; width: 0; height: 0;
+            border-left: 8px solid transparent; border-right: 8px solid transparent;
+            border-bottom: 16px solid #00ff00; z-index: 4;
+            transform-origin: center 50px; transform: translate(-50%, -100%) rotate(0deg); 
+            filter: drop-shadow(0 0 8px #00ff00); opacity: 0; transition: opacity 0.3s;
+        }
+
+        #stats { 
+            position: absolute; top: 20px; left: 20px; color: #fff; font-size: 16px; font-weight: 800; 
+            background: rgba(0, 0, 0, 0.7); padding: 12px 25px; border-radius: 8px; border-left: 4px solid #f1c40f; backdrop-filter: blur(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        #touch-controls { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: auto; }
+        
+        #joystick-base { 
+            position: absolute; width: 120px; height: 120px; border: 2px dashed rgba(255, 255, 255, 0.3); 
+            border-radius: 50%; display: none; pointer-events: none; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.5) 100%); transform: translate(-50%, -50%); 
+        }
+        #joystick-stick { 
+            position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; background: rgba(241, 196, 15, 0.8); 
+            border-radius: 50%; box-shadow: 0 0 15px rgba(241, 196, 15, 0.5); transform: translate(-50%, -50%); border: 2px solid white;
+        }
+
+        #fireButton { 
+            position: absolute; bottom: 80px; right: 50px; width: 90px; height: 90px; 
+            background: radial-gradient(circle, #c0392b, #922b21); border: 3px solid rgba(255, 255, 255, 0.6); 
+            border-radius: 50%; pointer-events: auto; z-index: 20; display: flex; align-items: center; justify-content: center; 
+            font-weight: 900; color: white; font-size: 14px; letter-spacing: 1px; box-shadow: 0 5px 25px rgba(192, 57, 43, 0.8); transition: transform 0.1s; 
+            text-shadow: 0 0 5px #000;
+        }
+        #fireButton:active { transform: scale(0.92); background: #a93226; }
+
+        #menu { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: linear-gradient(rgba(0,0,0,0.85), rgba(20,10,0,0.95)), url('https://threejs.org/examples/textures/terrain/grasslight-big.jpg'); 
+            background-size: cover; background-position: center;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            color: #fff; pointer-events: auto; z-index: 50; padding: 20px; text-align: center; overflow-y: auto; box-sizing: border-box;
+        }
+        
+        h1 { font-size: 36px; margin: 0 0 10px 0; color: #f1c40f; text-shadow: 0 0 20px rgba(241, 196, 15, 0.8); flex-shrink: 0; letter-spacing: 3px; }
+        
+        .guide-box {
+            background: rgba(40, 40, 40, 0.8); border: 1px solid rgba(241, 196, 15, 0.3); border-radius: 12px; padding: 10px 15px;
+            margin-bottom: 20px; max-width: 550px; width: 90%; text-align: left; backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        .guide-box h3 { text-align: center; color: #f1c40f; margin: 0 0 5px 0; border-bottom: 1px solid rgba(241, 196, 15, 0.3); letter-spacing: 1px; }
+        .guide-cols { display: flex; gap: 20px; justify-content: space-around; }
+        .guide-col { flex: 1; }
+        .guide-col h4 { margin: 5px 0; color: #aaa; font-size: 12px; text-transform: uppercase; }
+        .guide-box ul { padding-left: 20px; margin: 0; font-size: 12px; color: #ccc; line-height: 1.4; }
+        
+        .input-group { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        input { padding: 12px; font-size: 16px; text-align: center; margin-bottom: 15px; width: 280px; background: rgba(0,0,0,0.6); border: 2px solid #555; border-radius: 8px; color: #fff; outline: none; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        input:focus { border-color: #f1c40f; background: rgba(0,0,0,0.8); box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); }
+        .mode-container { display: flex; gap: 15px; width: 100%; justify-content: center; max-width: 500px; flex-wrap: wrap; }
+        button.mode-btn { flex: 1; min-width: 140px; padding: 15px; font-size: 14px; background: linear-gradient(45deg, #d4ac0d, #a3860a); border: 1px solid #f1c40f; color: #000; border-radius: 8px; font-weight: 900; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        button.mode-btn:hover { background: #f1c40f; box-shadow: 0 0 20px rgba(241, 196, 15, 0.6); }
+        .hidden { display: none !important; }
+
+        @media screen and (max-height: 500px) {
+            h1, .guide-box { display: none; }
+            input { margin-bottom: 10px; width: 200px; padding: 8px; }
+            #menu { justify-content: center; padding-top: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <audio id="bgm" loop>
+        <source src="backsound.webm" type="audio/webm">
+    </audio>
+
+    <audio id="ambience" loop>
+        <source src="forest.mp3" type="audio/mp3">
+    </audio>
+
+    <div id="uiLayer">
+        <button id="musicToggle">🔇</button>
+        <div id="compass-arrow"></div> 
+        <div id="crosshair"></div>
+        <div id="stats">🎯 <span id="targetCount">0</span> | ⏱️ <span id="timer">0.00</span>s</div>
+        <div id="touch-controls"></div>
+        <div id="joystick-base"><div id="joystick-stick"></div></div>
+        <div id="fireButton">TEMBAK</div>
+    </div>
+    
+    <div id="menu">
+        <h1>OPERASI RIMBA</h1>
+        
+        <div class="guide-box">
+            <h3>PANDUAN MISI</h3>
+            <div class="guide-cols">
+                <div class="guide-col">
+                    <h4>📱 HP / TABLET</h4>
+                    <ul>
+                        <li><b>GERAK:</b> Geser layar kiri.</li>
+                        <li><b>BIDIK:</b> Geser layar kanan.</li>
+                        <li><b>TEMBAK:</b> Tombol Merah.</li>
+                    </ul>
+                </div>
+                <div class="guide-col">
+                    <h4>💻 PC / LAPTOP</h4>
+                    <ul>
+                        <li><b>GERAK:</b> Tombol W, A, S, D.</li>
+                        <li><b>BIDIK:</b> Gerakan Mouse.</li>
+                        <li><b>TEMBAK:</b> Klik Kiri / Spasi.</li>
+                        <li>*Klik layar utk kunci kursor.</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="text-align:center; font-size:12px; margin-top:5px; color:#f1c40f;">
+                🧭 <b>PANAH HIJAU</b> menunjukkan arah musuh terdekat.
+            </div>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="playerName" placeholder="KODE NAMA: RANGER" autocomplete="off">
+            <p style="font-size: 12px; color: #aaa; margin: 0 0 10px 0;">PILIH MISI OPERASI:</p>
+            <div class="mode-container">
+                <button class="mode-btn" id="btn-static">TARGET DIAM</button>
+                <button class="mode-btn" id="btn-moving">TARGET BERGERAK</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="container"></div>
+
+    <script type="module">
+        import * as THREE from 'https://unpkg.com/three@0.126.0/build/three.module.js';
+
+        // --- 1. AUDIO CONTROLLER (HYBRID) ---
+        class AudioController {
+            constructor() {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                this.bgm = document.getElementById('bgm');
+                this.ambience = document.getElementById('ambience');
+                this.toggleBtn = document.getElementById('musicToggle');
+                
+                this.isPlaying = false;
+                this.currentState = 'MENU'; // 'MENU' or 'GAME'
+                
+                this.bgm.volume = 1.0;
+                this.ambience.volume = 0.6; // Suara hutan sedikit lebih pelan
+
+                this.toggleBtn.onclick = (e) => { e.stopPropagation(); this.toggleMusic(); };
+                
+                // Pre-generate noise buffer untuk tembakan
+                this.gunBuffer = this.createNoiseBuffer();
+            }
+
+            createNoiseBuffer() {
+                const bufferSize = this.ctx.sampleRate * 2.0; // 2 detik buffer
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                return buffer;
+            }
+
+            toggleMusic() {
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                this.isPlaying = !this.isPlaying;
+                this.updateTrackState();
+            }
+
+            updateTrackState() {
+                if(this.isPlaying) {
+                    this.toggleBtn.innerText = "🔊";
+                    if(this.currentState === 'MENU') {
+                        this.bgm.play().catch(()=>{});
+                        this.ambience.pause();
+                    } else {
+                        this.bgm.pause();
+                        this.ambience.play().catch(()=>{});
+                    }
+                } else {
+                    this.toggleBtn.innerText = "🔇";
+                    this.bgm.pause();
+                    this.ambience.pause();
+                }
+            }
+
+            switchToGame() {
+                this.currentState = 'GAME';
+                if(this.isPlaying) this.updateTrackState();
+            }
+
+            switchToMenu() {
+                this.currentState = 'MENU';
+                if(this.isPlaying) this.updateTrackState();
+            }
+
+            playGunShot() {
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                
+                // 1. Noise Source (Ledakan)
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = this.gunBuffer;
+                const noiseFilter = this.ctx.createBiquadFilter();
+                noiseFilter.type = "lowpass";
+                noiseFilter.frequency.value = 1000;
+                const noiseEnv = this.ctx.createGain();
+                
+                noise.connect(noiseFilter);
+                noiseFilter.connect(noiseEnv);
+                noiseEnv.connect(this.ctx.destination);
+                
+                // Envelope Ledakan (Cepat naik, cepat turun)
+                const t = this.ctx.currentTime;
+                noiseEnv.gain.setValueAtTime(0, t);
+                noiseEnv.gain.linearRampToValueAtTime(1, t + 0.01);
+                noiseEnv.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+                
+                noise.start(t);
+                noise.stop(t + 0.2);
+
+                // 2. Punch (Hentakan Awal)
+                const osc = this.ctx.createOscillator();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(150, t);
+                osc.frequency.exponentialRampToValueAtTime(0.01, t + 0.1);
+                const oscEnv = this.ctx.createGain();
+                oscEnv.gain.setValueAtTime(0.5, t);
+                oscEnv.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+                
+                osc.connect(oscEnv);
+                oscEnv.connect(this.ctx.destination);
+                osc.start(t);
+                osc.stop(t + 0.1);
+            }
+
+            playHitSound() {
+                // Suara "Ting!" metalik jika kena
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                const osc = this.ctx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.1);
+                const g = this.ctx.createGain();
+                g.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                osc.connect(g); g.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + 0.3);
+            }
+        }
+
+        // --- 2. UI MANAGER ---
+        class UIManager {
+            constructor() {
+                this.menu = document.getElementById('menu');
+                this.timerEl = document.getElementById('timer');
+                this.countEl = document.getElementById('targetCount');
+                this.compass = document.getElementById('compass-arrow');
+                this.inputName = document.getElementById('playerName');
+            }
+            hideMenu() { this.menu.classList.add('hidden'); }
+            showMenu() { this.menu.classList.remove('hidden'); }
+            updateStats(time, left) { this.timerEl.innerText = time; this.countEl.innerText = left; }
+            checkPlatform() { }
+            updateCompass(camera, targets) {
+                if (targets.length === 0) { this.compass.style.opacity = 0; return; }
+                this.compass.style.opacity = 0.8;
+                let closestDist = Infinity; let closestTarget = null; const camPos = camera.position;
+                targets.forEach(t => { const dist = camPos.distanceTo(t.mesh.position); if(dist < closestDist) { closestDist = dist; closestTarget = t.mesh; } });
+                if (closestTarget) {
+                    const targetPos = closestTarget.position.clone();
+                    const dir = new THREE.Vector3().subVectors(targetPos, camPos);
+                    const camEuler = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
+                    dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), -camEuler.y);
+                    let angle = Math.atan2(dir.x, -dir.z);
+                    this.compass.style.transform = `translate(-50%, -100%) rotate(${angle * (180/Math.PI)}deg)`;
+                }
+            }
+            getPlayerName() { return this.inputName.value.trim(); }
+        }
+
+        // --- 3. WORLD ---
+        class World {
+            constructor(arenaSize) {
+                this.arenaSize = arenaSize;
+                this.scene = new THREE.Scene();
+                const atmosphericColor = 0x2c1e31;
+                this.scene.background = new THREE.Color(atmosphericColor);
+                this.scene.fog = new THREE.Fog(atmosphericColor, 10, 90);
+                this.treePositions = [];
+                this.setupLights(); this.createGround(); this.createForest();
+            }
+            setupLights() {
+                const ambient = new THREE.AmbientLight(0x111122, 0.2); this.scene.add(ambient);
+                const hemi = new THREE.HemisphereLight(0x443355, 0x111122, 0.3); this.scene.add(hemi);
+                const dir = new THREE.DirectionalLight(0xff7700, 2.5); 
+                dir.position.set(-80, 30, -60); dir.castShadow = true;
+                dir.shadow.mapSize.set(4096, 4096); 
+                dir.shadow.camera.left = -this.arenaSize; dir.shadow.camera.right = this.arenaSize;
+                dir.shadow.camera.top = this.arenaSize; dir.shadow.camera.bottom = -this.arenaSize;
+                dir.shadow.camera.far = 200; dir.shadow.bias = -0.0001;
+                this.scene.add(dir);
+            }
+            createGround() {
+                const canvas = document.createElement('canvas'); canvas.width=512; canvas.height=512;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = "#1a120d"; ctx.fillRect(0,0,512,512);
+                for(let i=0; i<5000; i++) { ctx.fillStyle = Math.random()>0.5 ? "rgba(0,0,0,0.3)" : "rgba(50,30,20,0.1)"; ctx.fillRect(Math.random()*512, Math.random()*512, 2, 2); }
+                for(let i=0; i<600; i++) { ctx.fillStyle = Math.random()>0.6 ? "#1e3d12" : "#2f4b1f"; ctx.fillRect(Math.random()*512,Math.random()*512,Math.random()*4+2, Math.random()*4+2); }
+                const tex = new THREE.CanvasTexture(canvas); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(this.arenaSize/4, this.arenaSize/4); tex.anisotropy = 16;
+                const mesh = new THREE.Mesh(new THREE.PlaneGeometry(this.arenaSize*2, this.arenaSize*2), new THREE.MeshStandardMaterial({map:tex, roughness:1.0, metalness: 0.0}));
+                mesh.rotation.x = -Math.PI/2; mesh.receiveShadow = true; this.scene.add(mesh);
+            }
+            createForest() {
+                this.treePositions = [];
+                const trunkGeo = new THREE.CylinderGeometry(0.4, 0.6, 3.5); const leafGeo = new THREE.ConeGeometry(2.5, 5.5, 7);
+                const trunkMat = new THREE.MeshStandardMaterial({color: 0x2e1e14, roughness: 1.0}); const leafMat = new THREE.MeshStandardMaterial({color: 0x0d2b0f, roughness: 1.0});
+                for(let i=0; i<150; i++) {
+                    const tree = new THREE.Group();
+                    const t = new THREE.Mesh(trunkGeo, trunkMat); t.position.y=1.75; t.castShadow=t.receiveShadow=true;
+                    const l = new THREE.Mesh(leafGeo, leafMat); l.position.y=4.5; l.castShadow=l.receiveShadow=true;
+                    tree.add(t); tree.add(l);
+                    let x, z; do { x = (Math.random()-0.5) * this.arenaSize * 1.8; z = (Math.random()-0.5) * this.arenaSize * 1.8; } while(Math.sqrt(x*x + z*z) < 15);
+                    tree.position.set(x, 0, z); tree.rotation.y = Math.random() * Math.PI; tree.scale.setScalar(0.8 + Math.random()*0.6);
+                    this.scene.add(tree); this.treePositions.push({x: x, z: z, radius: 4}); 
+                }
+            }
+        }
+
+        // --- 4. PLAYER & WEAPON UPGRADE ---
+        class Player {
+            constructor(camera, domElement, shootCallback) {
+                this.camera = camera;
+                this.gunMesh = new THREE.Group();
+                this.recoilTimer = 0;
+                this.pitch = 0; this.yaw = 0;
+                this.moveState = { fwd: false, bwd: false, left: false, right: false };
+                this.createWeapon();
+                this.setupControls(domElement, shootCallback);
+            }
+            
+            createWeapon() {
+                // WARNA & MATERIAL
+                const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.4, metalness: 0.8 }); // Hitam Metalik
+                const stockMat = new THREE.MeshStandardMaterial({ color: 0x0d0d0d, roughness: 0.9 }); // Plastik/Kayu Gelap
+                const scopeMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.2, metalness: 0.9 });
+                
+                // 1. MAIN BODY (Kotak utama)
+                const body = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.4), bodyMat); 
+                body.position.z = 0.1; 
+                this.gunMesh.add(body);
+
+                // 2. BARREL (Laras Panjang)
+                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.6, 12), bodyMat); 
+                barrel.rotation.x = -Math.PI/2; 
+                barrel.position.z = -0.4; 
+                this.gunMesh.add(barrel);
+
+                // 3. HANDGUARD (Pelindung Laras)
+                const guard = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.1, 0.35), stockMat);
+                guard.position.z = -0.25;
+                this.gunMesh.add(guard);
+
+                // 4. MAGAZINE (Tempat Peluru - Melengkung dikit visual hack)
+                const mag = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.25, 0.1), stockMat);
+                mag.position.set(0, -0.2, 0.15);
+                mag.rotation.x = 0.2; // Miring dikit
+                this.gunMesh.add(mag);
+
+                // 5. GRIP (Pegangan Tangan)
+                const grip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.18, 0.08), stockMat);
+                grip.position.set(0, -0.15, 0.35);
+                grip.rotation.x = -0.3;
+                this.gunMesh.add(grip);
+
+                // 6. STOCK (Popor Belakang)
+                const stockBase = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.14, 0.3), stockMat);
+                stockBase.position.set(0, -0.05, 0.45);
+                this.gunMesh.add(stockBase);
+
+                // 7. SCOPE (Teropong)
+                const scopeBase = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.04, 0.2), bodyMat);
+                scopeBase.position.set(0, 0.08, 0.1);
+                this.gunMesh.add(scopeBase);
+                
+                const scopeCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.035, 0.25, 12), scopeMat);
+                scopeCyl.rotation.x = -Math.PI/2;
+                scopeCyl.position.set(0, 0.11, 0.1);
+                this.gunMesh.add(scopeCyl);
+
+                // POSISI KAMERA
+                this.gunMesh.position.set(0.25, -0.3, -0.5); 
+                this.camera.add(this.gunMesh);
+            }
+
+            setupControls(dom, onShoot) {
+                const joyBase = document.getElementById('joystick-base'); const joyStick = document.getElementById('joystick-stick'); const fireBtn = document.getElementById('fireButton');
+                let moveId=null, lookId=null, mx=0, my=0, lx=0, ly=0;
+                dom.addEventListener('touchstart', e => { e.preventDefault(); for(let t of e.changedTouches) { if(t.clientX < window.innerWidth/2 && moveId===null) { moveId=t.identifier; mx=t.clientX; my=t.clientY; joyBase.style.display='block'; joyBase.style.left=mx+'px'; joyBase.style.top=my+'px'; joyStick.style.transform=`translate(-50%,-50%)`; } else if(t.clientX >= window.innerWidth/2 && lookId===null) { lookId=t.identifier; lx=t.clientX; ly=t.clientY; } } }, {passive:false});
+                dom.addEventListener('touchmove', e => { e.preventDefault(); for(let t of e.changedTouches) { if(t.identifier===moveId) { const dx=t.clientX-mx, dy=t.clientY-my, dist=Math.min(50, Math.hypot(dx,dy)), ang=Math.atan2(dy,dx); joyStick.style.transform=`translate(calc(-50% + ${Math.cos(ang)*dist}px), calc(-50% + ${Math.sin(ang)*dist}px))`; this.moveState.fwd = dy<-10; this.moveState.bwd = dy>10; this.moveState.left = dx<-10; this.moveState.right = dx>10; } if(t.identifier===lookId) { this.yaw -= (t.clientX-lx)*0.004; this.pitch -= (t.clientY-ly)*0.004; this.pitch = Math.max(-1.5, Math.min(1.5, this.pitch)); lx=t.clientX; ly=t.clientY; } } }, {passive:false});
+                const end = e => { e.preventDefault(); for(let t of e.changedTouches) { if(t.identifier===moveId) { moveId=null; this.moveState.fwd = this.moveState.bwd = this.moveState.left = this.moveState.right = false; joyBase.style.display='none'; } if(t.identifier===lookId) lookId=null; } };
+                dom.addEventListener('touchend', end); dom.addEventListener('touchcancel', end);
+                fireBtn.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); this.triggerRecoil(); onShoot(); }, {passive:false});
+                document.body.addEventListener('click', (e) => { if(e.target.id === 'musicToggle') return; if (document.getElementById('menu').classList.contains('hidden')) document.body.requestPointerLock(); });
+                document.addEventListener('mousemove', (e) => { if (document.pointerLockElement === document.body) { this.yaw -= e.movementX * 0.002; this.pitch -= e.movementY * 0.002; this.pitch = Math.max(-1.5, Math.min(1.5, this.pitch)); } });
+                document.addEventListener('mousedown', (e) => { if (document.pointerLockElement === document.body && e.button === 0) { this.triggerRecoil(); onShoot(); } });
+                const onKey = (e, isDown) => { switch(e.code) { case 'KeyW': this.moveState.fwd = isDown; break; case 'KeyS': this.moveState.bwd = isDown; break; case 'KeyA': this.moveState.left = isDown; break; case 'KeyD': this.moveState.right = isDown; break; case 'Space': if(isDown && document.pointerLockElement === document.body) { this.triggerRecoil(); onShoot(); } break; } };
+                document.addEventListener('keydown', (e) => onKey(e, true)); document.addEventListener('keyup', (e) => onKey(e, false));
+            }
+            triggerRecoil() { this.recoilTimer = 0.2; }
+            update(delta, arenaSize) {
+                this.camera.rotation.set(this.pitch, this.yaw, 0, 'YXZ');
+                const speed = 10.0 * delta;
+                if(this.moveState.fwd) { this.camera.position.x-=Math.sin(this.yaw)*speed; this.camera.position.z-=Math.cos(this.yaw)*speed; }
+                if(this.moveState.bwd) { this.camera.position.x+=Math.sin(this.yaw)*speed; this.camera.position.z+=Math.cos(this.yaw)*speed; }
+                if(this.moveState.left) { this.camera.position.x-=Math.cos(this.yaw)*speed; this.camera.position.z+=Math.sin(this.yaw)*speed; }
+                if(this.moveState.right) { this.camera.position.x+=Math.cos(this.yaw)*speed; this.camera.position.z-=Math.sin(this.yaw)*speed; }
+                const L = arenaSize-2; this.camera.position.x = Math.max(-L, Math.min(L, this.camera.position.x)); this.camera.position.z = Math.max(-L, Math.min(L, this.camera.position.z)); this.camera.position.y = 1.7;
+                if(this.recoilTimer > 0) { this.recoilTimer -= delta; this.gunMesh.position.z = -0.5 + (this.recoilTimer * 0.2); this.gunMesh.rotation.x = this.recoilTimer * 0.5; } else { this.gunMesh.position.z = -0.5; this.gunMesh.rotation.x = 0; }
+            }
+        }
+
+        // --- 5. TARGET SYSTEM ---
+        class TargetSystem {
+            constructor(scene, arenaSize) {
+                this.scene = scene; this.arenaSize = arenaSize; this.targets = []; this.targetCount = 5;
+                this.obstacles = [];
+            }
+            spawnTargets(count, treePositions, mode) {
+                this.obstacles = treePositions;
+                this.clearTargets(); this.targetCount = count;
+                for(let i=0; i<count; i++) this.spawnSingle(mode);
+            }
+            clearTargets() { this.targets.forEach(t => this.scene.remove(t.mesh)); this.targets = []; }
+            createStrawMesh(problem) {
+                const grp = new THREE.Group();
+                const cvs = document.createElement('canvas'); cvs.width=64; cvs.height=64; const ctx=cvs.getContext('2d');
+                ctx.fillStyle="#c0a050"; ctx.fillRect(0,0,64,64); ctx.strokeStyle="#8a6e20"; ctx.beginPath(); ctx.moveTo(0,32); ctx.lineTo(64,32); ctx.stroke();
+                const mat = new THREE.MeshStandardMaterial({map:new THREE.CanvasTexture(cvs), roughness: 1.0});
+                const bale = new THREE.Mesh(new THREE.CylinderGeometry(0.6,0.6,1.2,8), mat); bale.position.y=0.6; grp.add(bale);
+                const bale2 = new THREE.Mesh(new THREE.CylinderGeometry(0.6,0.6,1.2,8), mat); bale2.position.y=1.8; grp.add(bale2);
+                
+                problem.opts.forEach((val, i) => {
+                    const c=document.createElement('canvas'); c.width=128; c.height=64; const x=c.getContext('2d');
+                    x.fillStyle='#3e2723'; x.fillRect(0,0,128,64); x.strokeStyle='#2e1e14'; x.lineWidth=4; x.strokeRect(2,2,124,60);
+                    x.font="bold 40px Arial"; x.textAlign="center"; x.textBaseline="middle"; x.strokeStyle='black'; x.lineWidth=4; x.strokeText(val,64,32); x.fillStyle="white"; x.fillText(val,64,32);
+                    const m = new THREE.Mesh(new THREE.BoxGeometry(0.7,0.35,0.05), new THREE.MeshStandardMaterial({map:new THREE.CanvasTexture(c), emissive:0x332211, roughness: 0.8}));
+                    m.position.set(0, 2.0-(i*0.45), 0.62); m.userData = { isTarget: true, val: val, corr: problem.ans, parent: grp }; grp.add(m);
+                });
+                const cQ=document.createElement('canvas'); cQ.width=256; cQ.height=64; const xQ=cQ.getContext('2d');
+                xQ.fillStyle="#3e2723"; xQ.fillRect(0,0,256,64); xQ.strokeStyle="#f1c40f"; xQ.lineWidth=4; xQ.strokeRect(2,2,252,60);
+                xQ.font="bold 30px Courier New"; xQ.textAlign="center"; xQ.textBaseline="middle"; xQ.fillStyle="#f1c40f"; xQ.fillText(problem.q,128,32);
+                const sprMat = new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cQ)});
+                sprMat.onBeforeCompile = (shader) => { shader.fragmentShader = shader.fragmentShader.replace('outgoingLight = diffuseColor.rgb;', 'outgoingLight = diffuseColor.rgb + vec3(0.2, 0.1, 0.0);'); };
+                const spr = new THREE.Sprite(sprMat); spr.scale.set(4,1,1); spr.position.y=3.0; grp.add(spr);
+                return grp;
+            }
+            spawnSingle(mode) {
+                const a=Math.floor(Math.random()*5)+2, b=Math.floor(Math.random()*10)-5, x=Math.floor(Math.random()*5)+1, ans=a*x+b;
+                let opts=[ans]; while(opts.length<3){ let w=ans+(Math.floor(Math.random()*8)-4); if(w!==ans && !opts.includes(w)) opts.push(w); }
+                opts.sort(()=>Math.random()-0.5);
+                const grp = this.createStrawMesh({q:`f(x)=${a}x${b>=0?'+'+b:b},f(${x})`, opts, ans});
+                const bound = this.arenaSize - 10;
+                let sx, sz, valid=false, attempt=0;
+                const SAFE_DIST = 6.0; 
+                while(!valid && attempt<200) {
+                    sx = (Math.random()-0.5)*2*bound; sz = (Math.random()-0.5)*2*bound; valid = true;
+                    for(let t of this.obstacles) { if(Math.hypot(sx-t.x, sz-t.z) < SAFE_DIST) { valid=false; break; } }
+                    attempt++;
+                }
+                if (!valid) { sx=0; sz=0; }
+                grp.position.set(sx,0,sz); grp.lookAt(0,0,0); this.scene.add(grp);
+                this.targets.push({ mesh: grp, dir: new THREE.Vector3(Math.random()-0.5, 0, Math.random()-0.5).normalize(), speed: mode==='MOVING' ? 0.8+Math.random()*1.2 : 0, mode: mode });
+            }
+            update(delta) {
+                const L = this.arenaSize - 5;
+                const TREE_HIT_RADIUS = 3.0;
+                this.targets.forEach(t => {
+                    if(t.mode === 'MOVING') {
+                        const nextPos = t.mesh.position.clone().addScaledVector(t.dir, t.speed * delta);
+                        let colliding = false;
+                        for(let obs of this.obstacles) {
+                            if(Math.hypot(nextPos.x - obs.x, nextPos.z - obs.z) < TREE_HIT_RADIUS) { colliding = true; break; }
+                        }
+                        if(colliding) {
+                            t.dir.multiplyScalar(-1); t.dir.x += (Math.random()-0.5); t.dir.z += (Math.random()-0.5); t.dir.normalize();
+                        } else {
+                            t.mesh.position.copy(nextPos);
+                        }
+                        t.mesh.lookAt(t.mesh.position.clone().add(t.dir));
+                        if(Math.abs(t.mesh.position.x)>L) t.dir.x*=-1; if(Math.abs(t.mesh.position.z)>L) t.dir.z*=-1;
+                    }
+                });
+            }
+            removeTarget(mesh) { this.scene.remove(mesh); this.targets = this.targets.filter(t => t.mesh !== mesh); this.targetCount--; return this.targetCount; }
+        }
+
+        // --- 6. GAME APP ---
+        class GameApp {
+            constructor() {
+                this.ui = new UIManager();
+                this.audio = new AudioController();
+                this.world = new World(100);
+                this.targetSystem = new TargetSystem(this.world.scene, 100);
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                this.renderer.outputEncoding = THREE.sRGBEncoding; this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.2;
+                document.getElementById('container').appendChild(this.renderer.domElement);
+                this.camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 200);
+                this.world.scene.add(this.camera);
+                this.player = new Player(this.camera, document.getElementById('touch-controls'), () => this.shoot());
+                this.isActive = false; this.startTime = 0;
+                document.getElementById('btn-static').onclick = () => this.startGame('STATIC');
+                document.getElementById('btn-moving').onclick = () => this.startGame('MOVING');
+                window.addEventListener('resize', () => this.onResize());
+                this.ui.checkPlatform();
+                this.animate = this.animate.bind(this);
+                requestAnimationFrame(this.animate);
+            }
+            startGame(mode) {
+                const name = this.ui.getPlayerName();
+                if(!name) { alert("MOHON MASUKKAN NAMA RANGER!"); return; }
+                this.ui.hideMenu();
+                
+                // Audio Switch: Menu(OFF) -> Game(ON)
+                this.audio.switchToGame(); 
+                if(!this.audio.isPlaying) this.audio.toggleMusic(); // Paksa nyala jika belum
+
+                this.targetSystem.spawnTargets(5, this.world.treePositions, mode);
+                this.camera.position.set(0, 1.7, 0); this.player.pitch = 0; this.player.yaw = 0;
+                this.isActive = true; this.startTime = performance.now();
+                document.body.requestPointerLock();
+            }
+            shoot() {
+                if(!this.isActive) return;
+                this.audio.playGunShot();
+                const ray = new THREE.Raycaster(); ray.setFromCamera(new THREE.Vector2(0,0), this.camera);
+                const hits = ray.intersectObjects(this.world.scene.children, true);
+                for(let hit of hits) {
+                    const obj = hit.object;
+                    if(obj.userData && obj.userData.isTarget) {
+                        if(obj.userData.val === obj.userData.corr) {
+                            this.audio.playHitSound();
+                            const parent = obj.userData.parent;
+                            let s = 1.0; const fade = setInterval(()=>{ s-=0.1; parent.scale.set(s,s,s); if(s<=0) { clearInterval(fade); } }, 20);
+                            const sisa = this.targetSystem.removeTarget(parent);
+                            if(sisa <= 0) this.gameOver();
+                        } else {
+                            // Salah Tembak
+                            obj.material.emissive.setHex(0xff0000); setTimeout(()=>obj.material.emissive.setHex(0x332211), 300);
+                        }
+                        break;
+                    }
+                }
+            }
+            gameOver() {
+                this.isActive = false; document.exitPointerLock();
+                // Audio Switch: Game(OFF) -> Menu(ON)
+                this.audio.switchToMenu();
+
+                setTimeout(() => {
+                    const time = ((performance.now()-this.startTime)/1000).toFixed(2);
+                    alert(`MISI SELESAI!\nRanger: ${this.ui.getPlayerName()}\nWaktu: ${time} detik`);
+                    location.reload();
+                }, 500);
+            }
+            onResize() { this.camera.aspect = window.innerWidth / window.innerHeight; this.camera.updateProjectionMatrix(); this.renderer.setSize(window.innerWidth, window.innerHeight); }
+            animate() {
+                requestAnimationFrame(this.animate);
+                const time = performance.now(); const delta = (time - (this.prevTime || time)) / 1000; this.prevTime = time;
+                if(this.isActive) {
+                    const elapsed = ((time - this.startTime)/1000).toFixed(2);
+                    this.ui.updateStats(elapsed, this.targetSystem.targetCount);
+                    this.ui.updateCompass(this.camera, this.targetSystem.targets);
+                    this.player.update(delta, 100);
+                    this.targetSystem.update(delta);
+                }
+                this.renderer.render(this.world.scene, this.camera);
+            }
+        }
+
+        const app = new GameApp();
+    </script>
+</body>
+</html>
