@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Math FPS: Operasi Rimba (Final Audio Fix)</title>
+    <title>Math FPS: Operasi Rimba (Ultra HD)</title>
     <style>
         body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; touch-action: none; color: #eee; }
         #uiLayer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; user-select: none; }
         
+        /* Tombol Musik */
         #musicToggle {
             position: absolute; top: 20px; right: 20px; width: 50px; height: 50px;
             background: rgba(0, 0, 0, 0.6); border: 2px solid #f1c40f; border-radius: 50%;
@@ -17,6 +18,7 @@
         }
         #musicToggle:active { transform: scale(0.9); }
 
+        /* Crosshair */
         #crosshair { 
             position: absolute; top: 50%; left: 50%; width: 4px; height: 4px; 
             background: #ff0000; border-radius: 50%; transform: translate(-50%, -50%); 
@@ -24,6 +26,7 @@
         }
         #crosshair::before { content: ''; position: absolute; top: -12px; left: -12px; width: 24px; height: 24px; border: 2px solid rgba(255, 50, 50, 0.8); border-radius: 50%; box-sizing: border-box; }
 
+        /* Kompas */
         #compass-arrow {
             position: absolute; top: 50%; left: 50%; width: 0; height: 0;
             border-left: 8px solid transparent; border-right: 8px solid transparent;
@@ -32,12 +35,14 @@
             filter: drop-shadow(0 0 8px #00ff00); opacity: 0; transition: opacity 0.3s;
         }
 
+        /* Stats */
         #stats { 
             position: absolute; top: 20px; left: 20px; color: #fff; font-size: 16px; font-weight: 800; 
             background: rgba(0, 0, 0, 0.7); padding: 12px 25px; border-radius: 8px; border-left: 4px solid #f1c40f; backdrop-filter: blur(5px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
+        /* Kontrol Sentuh */
         #touch-controls { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: auto; }
         
         #joystick-base { 
@@ -58,6 +63,7 @@
         }
         #fireButton:active { transform: scale(0.92); background: #a93226; }
 
+        /* Menu Style */
         #menu { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)), url('https://threejs.org/examples/textures/terrain/grasslight-big.jpg'); 
@@ -104,11 +110,9 @@
     <audio id="audio-menu" loop>
         <source src="backsound.webm" type="audio/webm">
     </audio>
-    
     <audio id="audio-sore" loop>
         <source src="forest.mp3" type="audio/mp3">
     </audio>
-    
     <audio id="audio-dingin" loop>
         <source src="dingin.mp3" type="audio/mp3">
     </audio>
@@ -192,9 +196,9 @@
             { type: 'TEXT', q: "Harga 1 roti 3000. Beli x roti?", opts: ["y=3000x", "y=3000+x", "y=x^2"], ans: "y=3000x" },
             { type: 'TEXT', q: "Parkir 2000 + 1000/jam. x jam?", opts: ["y=1000x+2000", "y=2000x", "y=1000/x"], ans: "y=1000x+2000" },
             { type: 'TEXT', q: "Taksi awal 8000 + 4000/km. Jarak x km?", opts: ["y=4000x+8000", "y=8000x+4000", "y=12000x"], ans: "y=4000x+8000" },
-            { type: 'TEXT', q: "Biaya sewa sepeda Rp10.000 dan tambahan Rp5.000 setiap jam. Jika disewa x jam, biayanya?", opts: ["y=5000x+10000", "y=10000x+5000", "y=15000x"], ans: "y=5000x+10000" },
-            { type: 'TEXT', q: "Tabungan Dina bertambah Rp50.000 setiap minggu. Total setelah x minggu?", opts: ["y=50000x", "y=x+50000", "y=50x"], ans: "y=50000x" },
-            { type: 'TEXT', q: "Biaya fotokopi Rp500 per lembar dan biaya awal Rp2.000. Rumusnya?", opts: ["y=500x+2000", "y=2000x+500", "y=2500x"], ans: "y=500x+2000" },
+            { type: 'TEXT', q: "Biaya sewa sepeda Rp10.000 + Rp5.000/jam. x jam?", opts: ["y=5000x+10000", "y=10000x+5000", "y=15000x"], ans: "y=5000x+10000" },
+            { type: 'TEXT', q: "Tabungan Dina bertambah Rp50.000/minggu. Total x minggu?", opts: ["y=50000x", "y=x+50000", "y=50x"], ans: "y=50000x" },
+            { type: 'TEXT', q: "Biaya fotokopi Rp500/lbr dan awal Rp2.000. Rumusnya?", opts: ["y=500x+2000", "y=2000x+500", "y=2500x"], ans: "y=500x+2000" },
             { type: 'TEXT', q: "y=2x+4. Jika y=16, x=?", opts: ["6", "5", "7"], ans: "6" },
             { type: 'TEXT', q: "y=5x-3. Jika y=22, x=?", opts: ["5", "4", "6"], ans: "5" },
             { type: 'TEXT', q: "Gradien dari y=-3x+60?", opts: ["-3", "3", "60"], ans: "-3" },
@@ -209,21 +213,18 @@
             { type: 'GRAPH', q: "Cari persamaan garis!", params: {m: 1, c: -3}, opts: ["y=x-3", "y=3x-1", "y=-x+3"], ans: "y=x-3" }
         ];
 
-        // --- 1. AUDIO CONTROLLER (FIXED) ---
+        // --- 1. AUDIO CONTROLLER ---
         class AudioController {
             constructor() {
                 this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                
-                // MAPPING FILE AUDIO YANG BENAR
-                this.bgmMenu = document.getElementById('audio-menu');   // backsound.webm
-                this.bgmSore = document.getElementById('audio-sore');   // forest.mp3
-                this.bgmDingin = document.getElementById('audio-dingin'); // dingin.mp3
-                
+                this.bgmMenu = document.getElementById('audio-menu');   
+                this.bgmSore = document.getElementById('audio-sore');   
+                this.bgmDingin = document.getElementById('audio-dingin'); 
                 this.toggleBtn = document.getElementById('musicToggle');
                 
                 this.isPlaying = false;
-                this.currentState = 'MENU'; // 'MENU' | 'GAME'
-                this.currentTheme = 'WARM'; // 'WARM' | 'COLD'
+                this.currentState = 'MENU'; 
+                this.currentTheme = 'WARM'; 
 
                 this.toggleBtn.onclick = (e) => { e.stopPropagation(); this.toggleMusic(); };
                 this.gunBuffer = this.createNoiseBuffer();
@@ -243,59 +244,40 @@
                 this.updateTrackState();
             }
 
-            // LOGIKA PEMUTARAN AUDIO
             updateTrackState() {
                 if(this.isPlaying) {
                     this.toggleBtn.innerText = "🔊";
-                    
                     if (this.currentState === 'MENU') {
-                        // MENU: Play backsound.webm, Stop others
                         this.bgmMenu.play().catch(()=>{});
-                        this.bgmSore.pause();
-                        this.bgmSore.currentTime = 0;
-                        this.bgmDingin.pause();
-                        this.bgmDingin.currentTime = 0;
+                        this.bgmSore.pause(); this.bgmSore.currentTime = 0;
+                        this.bgmDingin.pause(); this.bgmDingin.currentTime = 0;
                     } 
                     else if (this.currentState === 'GAME') {
-                        // GAME: Stop Menu
-                        this.bgmMenu.pause();
-                        this.bgmMenu.currentTime = 0;
-
+                        this.bgmMenu.pause(); this.bgmMenu.currentTime = 0;
                         if (this.currentTheme === 'WARM') {
-                            // SORE: Play forest.mp3
                             this.bgmSore.play().catch(()=>{});
                             this.bgmDingin.pause();
                         } else {
-                            // DINGIN: Play dingin.mp3
                             this.bgmDingin.play().catch(()=>{});
                             this.bgmSore.pause();
                         }
                     }
                 } else {
                     this.toggleBtn.innerText = "🔇";
-                    this.bgmMenu.pause();
-                    this.bgmSore.pause();
-                    this.bgmDingin.pause();
+                    this.bgmMenu.pause(); this.bgmSore.pause(); this.bgmDingin.pause();
                 }
             }
 
-            // Panggil saat masuk Menu
             playMenuMode() {
                 this.currentState = 'MENU';
-                // Auto play if was playing, or force play if first time
                 if(!this.isPlaying) { this.isPlaying = true; } 
                 this.updateTrackState();
             }
 
-            // Panggil saat masuk Game
             playGameMode(theme) {
                 this.currentState = 'GAME';
                 this.currentTheme = theme;
-                // Force play
-                if(!this.isPlaying) { 
-                    this.isPlaying = true; 
-                    if (this.ctx.state === 'suspended') this.ctx.resume();
-                }
+                if(!this.isPlaying) { this.isPlaying = true; if (this.ctx.state === 'suspended') this.ctx.resume(); }
                 this.updateTrackState();
             }
 
@@ -308,9 +290,6 @@
                 const t = this.ctx.currentTime;
                 env.gain.setValueAtTime(0, t); env.gain.linearRampToValueAtTime(1, t + 0.01); env.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
                 noise.start(t); noise.stop(t + 0.2);
-                const osc = this.ctx.createOscillator(); osc.type = 'triangle'; osc.frequency.setValueAtTime(150, t); osc.frequency.exponentialRampToValueAtTime(0.01, t + 0.1);
-                const oEnv = this.ctx.createGain(); oEnv.gain.setValueAtTime(0.5, t); oEnv.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
-                osc.connect(oEnv); oEnv.connect(this.ctx.destination); osc.start(t); osc.stop(t + 0.1);
             }
             playHitSound() {
                 if (this.ctx.state === 'suspended') this.ctx.resume();
@@ -356,13 +335,12 @@
             getOptions() { return { theme: this.optTheme.value, targetMode: this.optTarget.value, questMode: this.optQuest.value }; }
         }
 
-        // --- 3. WORLD (DUAL THEME ENGINE) ---
+        // --- 3. WORLD (HD & OPTIMIZED) ---
         class World {
             constructor(arenaSize, theme) {
                 this.arenaSize = arenaSize;
                 this.scene = new THREE.Scene();
-                this.theme = theme; // 'WARM' or 'COLD'
-                
+                this.theme = theme; 
                 this.setupAtmosphere();
                 this.treePositions = [];
                 this.setupLights(); 
@@ -372,12 +350,10 @@
 
             setupAtmosphere() {
                 if (this.theme === 'WARM') {
-                    // SORE HARI (Warm Sunset)
                     const fogColor = 0xffaa55; 
                     this.scene.background = new THREE.Color(fogColor);
                     this.scene.fog = new THREE.Fog(fogColor, 10, 90);
                 } else {
-                    // DINGIN (Cold Foggy)
                     const fogColor = 0x88aabb; 
                     this.scene.background = new THREE.Color(fogColor);
                     this.scene.fog = new THREE.FogExp2(fogColor, 0.02);
@@ -386,49 +362,53 @@
 
             setupLights() {
                 if (this.theme === 'WARM') {
-                    // Cahaya Matahari Sore
-                    const ambient = new THREE.AmbientLight(0xffddaa, 0.5); 
+                    const ambient = new THREE.AmbientLight(0xffddaa, 0.6); // Lebih terang
                     this.scene.add(ambient);
-                    const hemi = new THREE.HemisphereLight(0xffaa00, 0x553300, 0.4);
+                    const hemi = new THREE.HemisphereLight(0xffaa00, 0x553300, 0.5);
                     this.scene.add(hemi);
                     const dir = new THREE.DirectionalLight(0xffaa00, 2.0); 
                     dir.position.set(-80, 30, -60); dir.castShadow = true;
+                    // HD Shadows
+                    dir.shadow.mapSize.set(2048, 2048); 
                     this.scene.add(dir);
                 } else {
-                    // Cahaya Bulan Dingin
-                    const ambient = new THREE.AmbientLight(0x445566, 0.4); 
+                    const ambient = new THREE.AmbientLight(0x445566, 0.5); 
                     this.scene.add(ambient);
-                    const hemi = new THREE.HemisphereLight(0x88aaff, 0x223344, 0.5); 
+                    const hemi = new THREE.HemisphereLight(0x88aaff, 0x223344, 0.6); 
                     this.scene.add(hemi);
                     const dir = new THREE.DirectionalLight(0xcceeff, 1.5); 
                     dir.position.set(-80, 30, -60); dir.castShadow = true;
+                    // HD Shadows
+                    dir.shadow.mapSize.set(2048, 2048); 
                     this.scene.add(dir);
                 }
                 
                 const dir = this.scene.children.find(c => c.isDirectionalLight);
-                dir.shadow.mapSize.set(4096, 4096); 
                 dir.shadow.camera.left = -this.arenaSize; dir.shadow.camera.right = this.arenaSize;
                 dir.shadow.camera.top = this.arenaSize; dir.shadow.camera.bottom = -this.arenaSize;
-                dir.shadow.camera.far = 200; dir.shadow.bias = -0.0001;
+                dir.shadow.camera.far = 200; dir.shadow.bias = -0.0005;
             }
 
             createGround() {
-                const canvas = document.createElement('canvas'); canvas.width=512; canvas.height=512;
+                // HD Texture Gen
+                const canvas = document.createElement('canvas'); canvas.width=1024; canvas.height=1024; // 1K Texture
                 const ctx = canvas.getContext('2d');
                 
                 if (this.theme === 'WARM') {
-                    // Rumput Hijau Sore
-                    ctx.fillStyle = "#1a120d"; ctx.fillRect(0,0,512,512);
-                    for(let i=0; i<5000; i++) { ctx.fillStyle = Math.random()>0.5 ? "rgba(0,0,0,0.3)" : "rgba(50,30,20,0.1)"; ctx.fillRect(Math.random()*512, Math.random()*512, 2, 2); }
-                    for(let i=0; i<600; i++) { ctx.fillStyle = Math.random()>0.6 ? "#1e3d12" : "#2f4b1f"; ctx.fillRect(Math.random()*512,Math.random()*512,Math.random()*4+2, Math.random()*4+2); }
+                    ctx.fillStyle = "#1a120d"; ctx.fillRect(0,0,1024,1024);
+                    for(let i=0; i<10000; i++) { ctx.fillStyle = Math.random()>0.5 ? "rgba(0,0,0,0.3)" : "rgba(50,30,20,0.1)"; ctx.fillRect(Math.random()*1024, Math.random()*1024, 2, 2); }
+                    for(let i=0; i<1200; i++) { ctx.fillStyle = Math.random()>0.6 ? "#1e3d12" : "#2f4b1f"; ctx.fillRect(Math.random()*1024,Math.random()*1024,Math.random()*6+2, Math.random()*6+2); }
                 } else {
-                    // Rumput Gelap Dingin
-                    ctx.fillStyle = "#1a1a22"; ctx.fillRect(0,0,512,512);
-                    for(let i=0; i<5000; i++) { ctx.fillStyle = Math.random()>0.5 ? "rgba(0,0,0,0.4)" : "rgba(30,30,40,0.2)"; ctx.fillRect(Math.random()*512, Math.random()*512, 2, 2); }
-                    for(let i=0; i<600; i++) { ctx.fillStyle = Math.random()>0.6 ? "#112211" : "#1a2b1a"; ctx.fillRect(Math.random()*512,Math.random()*512,Math.random()*4+2, Math.random()*4+2); }
+                    ctx.fillStyle = "#1a1a22"; ctx.fillRect(0,0,1024,1024);
+                    for(let i=0; i<10000; i++) { ctx.fillStyle = Math.random()>0.5 ? "rgba(0,0,0,0.4)" : "rgba(30,30,40,0.2)"; ctx.fillRect(Math.random()*1024, Math.random()*1024, 2, 2); }
+                    for(let i=0; i<1200; i++) { ctx.fillStyle = Math.random()>0.6 ? "#112211" : "#1a2b1a"; ctx.fillRect(Math.random()*1024,Math.random()*1024,Math.random()*6+2, Math.random()*6+2); }
                 }
 
-                const tex = new THREE.CanvasTexture(canvas); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(this.arenaSize/4, this.arenaSize/4); tex.anisotropy = 16;
+                const tex = new THREE.CanvasTexture(canvas); 
+                tex.wrapS = tex.wrapT = THREE.RepeatWrapping; 
+                tex.repeat.set(this.arenaSize/8, this.arenaSize/8); 
+                tex.anisotropy = 16; // Tajam di kejauhan
+                
                 const matColor = this.theme === 'WARM' ? 0xffffff : 0xaaaaaa;
                 const mesh = new THREE.Mesh(new THREE.PlaneGeometry(this.arenaSize*2, this.arenaSize*2), new THREE.MeshStandardMaterial({map:tex, roughness:0.9, metalness: 0.1, color: matColor}));
                 mesh.rotation.x = -Math.PI/2; mesh.receiveShadow = true; this.scene.add(mesh);
@@ -436,7 +416,8 @@
 
             createForest() {
                 this.treePositions = [];
-                const trunkGeo = new THREE.CylinderGeometry(0.4, 0.6, 3.5); const leafGeo = new THREE.ConeGeometry(2.5, 5.5, 7);
+                const trunkGeo = new THREE.CylinderGeometry(0.4, 0.6, 3.5, 8); // Lebih detail segmennya
+                const leafGeo = new THREE.ConeGeometry(2.5, 5.5, 8);
                 
                 let trunkMat, leafMat;
                 if (this.theme === 'WARM') {
@@ -511,7 +492,7 @@
             }
         }
 
-        // --- 5. TARGET SYSTEM ---
+        // --- 5. TARGET SYSTEM (ULTRA SHARP CANVAS) ---
         class TargetSystem {
             constructor(scene, arenaSize) {
                 this.scene = scene; this.arenaSize = arenaSize; this.targets = []; this.targetCount = 5;
@@ -524,18 +505,44 @@
             }
             clearTargets() { this.targets.forEach(t => this.scene.remove(t.mesh)); this.targets = []; }
             
+            // GAMBAR GRAFIK SUPER TAJAM (4K Canvas)
             drawLinearGraph(ctx, w, h, m, c) {
-                const centerX = w / 2; const centerY = h / 2; const scale = 30;
-                ctx.fillStyle = "#fff"; ctx.fillRect(0,0,w,h);
-                ctx.strokeStyle = "#e0e0e0"; ctx.lineWidth = 1;
-                ctx.fillStyle = "#666"; ctx.font = "bold 26px Arial"; 
+                const centerX = w / 2; const centerY = h / 2; const scale = 60; // Scale diperbesar agar jelas
+                
+                ctx.fillStyle = "#ffffff"; ctx.fillRect(0,0,w,h);
+                
+                // Grid & Angka (Tebal & Besar)
+                ctx.lineWidth = 2; ctx.strokeStyle = "#cccccc";
+                ctx.fillStyle = "#000000"; ctx.font = "bold 40px Arial"; // Font Besar
                 ctx.textAlign = "center"; ctx.textBaseline = "top"; 
-                for(let i=-9; i<=9; i++) { if(i===0) continue; const x = centerX + (i * scale); ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); ctx.fillText(i, x, centerY + 8); }
+                
+                for(let i=-9; i<=9; i++) { 
+                    if(i===0) continue; 
+                    const x = centerX + (i * scale); 
+                    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); 
+                    ctx.fillText(i, x, centerY + 10); 
+                }
+                
                 ctx.textAlign = "right"; ctx.textBaseline = "middle"; 
-                for(let j=-5; j<=5; j++) { if(j===0) continue; const y = centerY - (j * scale); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); ctx.fillText(j, centerX - 8, y); }
-                ctx.strokeStyle = "#000"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, centerY); ctx.lineTo(w, centerY); ctx.moveTo(centerX, 0); ctx.lineTo(centerX, h); ctx.stroke();
-                ctx.fillStyle = "#000"; ctx.font = "bold 28px Arial"; ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText("X", w - 5, centerY - 5); ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText("Y", centerX + 5, 5); ctx.textAlign = "right"; ctx.textBaseline = "top"; ctx.fillText("0", centerX - 5, centerY + 5);
-                ctx.strokeStyle = "#ff0000"; ctx.lineWidth = 3; ctx.beginPath();
+                for(let j=-5; j<=5; j++) { 
+                    if(j===0) continue; 
+                    const y = centerY - (j * scale); 
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); 
+                    ctx.fillText(j, centerX - 15, y); 
+                }
+
+                // Sumbu Utama Tebal Hitam
+                ctx.lineWidth = 6; ctx.strokeStyle = "#000000"; 
+                ctx.beginPath(); ctx.moveTo(0, centerY); ctx.lineTo(w, centerY); ctx.moveTo(centerX, 0); ctx.lineTo(centerX, h); ctx.stroke();
+                
+                // Label Sumbu
+                ctx.fillStyle = "#000"; ctx.font = "bold 50px Arial"; 
+                ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText("X", w - 20, centerY - 20); 
+                ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText("Y", centerX + 20, 20); 
+                ctx.textAlign = "right"; ctx.textBaseline = "top"; ctx.fillText("0", centerX - 20, centerY + 20);
+
+                // Garis Linear Merah Tebal
+                ctx.lineWidth = 8; ctx.strokeStyle = "#ff0000"; ctx.beginPath();
                 const x1 = -10; const y1 = m*x1 + c; const x2 = 10; const y2 = m*x2 + c;
                 const cx1 = centerX + (x1 * scale); const cy1 = centerY - (y1 * scale);
                 const cx2 = centerX + (x2 * scale); const cy2 = centerY - (y2 * scale);
@@ -553,33 +560,44 @@
 
             createStrawMesh(problem) {
                 const grp = new THREE.Group();
-                const cvs = document.createElement('canvas'); cvs.width=64; cvs.height=64; const ctx=cvs.getContext('2d');
-                ctx.fillStyle="#c0a050"; ctx.fillRect(0,0,64,64); ctx.strokeStyle="#8a6e20"; ctx.beginPath(); ctx.moveTo(0,32); ctx.lineTo(64,32); ctx.stroke();
-                const mat = new THREE.MeshStandardMaterial({map:new THREE.CanvasTexture(cvs), roughness: 1.0});
-                const bale = new THREE.Mesh(new THREE.CylinderGeometry(0.6,0.6,1.2,8), mat); bale.position.y=0.6; grp.add(bale);
-                const bale2 = new THREE.Mesh(new THREE.CylinderGeometry(0.6,0.6,1.2,8), mat); bale2.position.y=1.8; grp.add(bale2);
+                // Jerami (Detail Naik)
+                const baleGeo = new THREE.CylinderGeometry(0.6,0.6,1.2,16); 
+                const baleMat = new THREE.MeshStandardMaterial({color: 0xc0a050, roughness: 1.0});
+                const bale = new THREE.Mesh(baleGeo, baleMat); bale.position.y=0.6; grp.add(bale);
+                const bale2 = new THREE.Mesh(baleGeo, baleMat); bale2.position.y=1.8; grp.add(bale2);
                 
                 let shuffledOpts = [...problem.opts].sort(() => Math.random() - 0.5);
                 shuffledOpts.forEach((val, i) => {
-                    const c=document.createElement('canvas'); c.width=256; c.height=64; const x=c.getContext('2d');
-                    x.fillStyle='#3e2723'; x.fillRect(0,0,256,64); x.strokeStyle='#2e1e14'; x.lineWidth=6; x.strokeRect(4,4,248,56);
-                    let fontSize = 40; x.font = `bold ${fontSize}px Arial`;
-                    while (x.measureText(val).width > 220 && fontSize > 10) { fontSize -= 2; x.font = `bold ${fontSize}px Arial`; }
-                    x.textAlign="center"; x.textBaseline="middle"; x.strokeStyle='black'; x.lineWidth=4; x.strokeText(val,128,32); x.fillStyle="white"; x.fillText(val,128,32);
-                    const m = new THREE.Mesh(new THREE.BoxGeometry(0.7,0.35,0.05), new THREE.MeshStandardMaterial({map:new THREE.CanvasTexture(c), emissive:0x332211, roughness: 0.8}));
+                    // Papan Jawaban HD (512x128)
+                    const c=document.createElement('canvas'); c.width=512; c.height=128; const x=c.getContext('2d');
+                    x.fillStyle='#3e2723'; x.fillRect(0,0,512,128); 
+                    x.strokeStyle='#2e1e14'; x.lineWidth=10; x.strokeRect(5,5,502,118);
+                    
+                    let fontSize = 80; x.font = `bold ${fontSize}px Arial`;
+                    while (x.measureText(val).width > 450 && fontSize > 20) { fontSize -= 5; x.font = `bold ${fontSize}px Arial`; }
+                    
+                    x.textAlign="center"; x.textBaseline="middle";
+                    x.strokeStyle='black'; x.lineWidth=6; x.strokeText(val,256,64); 
+                    x.fillStyle="white"; x.fillText(val,256,64);
+                    
+                    const tex = new THREE.CanvasTexture(c); tex.anisotropy = 16;
+                    const m = new THREE.Mesh(new THREE.BoxGeometry(0.7,0.35,0.05), new THREE.MeshStandardMaterial({map:tex, emissive:0x332211, roughness: 0.8}));
                     m.position.set(0, 2.0-(i*0.45), 0.62); m.userData = { isTarget: true, val: val, corr: problem.ans, parent: grp }; grp.add(m);
                 });
 
-                const cQ=document.createElement('canvas'); const W=1024; const H=512; cQ.width=W; cQ.height=H; const xQ=cQ.getContext('2d');
+                // Papan Soal 4K (2048x1024)
+                const cQ=document.createElement('canvas'); const W=2048; const H=1024; cQ.width=W; cQ.height=H; const xQ=cQ.getContext('2d');
                 if (problem.type === 'GRAPH') {
                     this.drawLinearGraph(xQ, W, H, problem.params.m, problem.params.c);
-                    xQ.font="bold 40px Arial"; xQ.fillStyle="#000"; xQ.textAlign="left"; xQ.fillText(problem.q, 20, 50);
+                    xQ.font="bold 80px Arial"; xQ.fillStyle="#000"; xQ.textAlign="left"; xQ.fillText(problem.q, 40, 100);
                 } else {
-                    xQ.fillStyle="#3e2723"; xQ.fillRect(0,0,W,H); xQ.strokeStyle="#f1c40f"; xQ.lineWidth=10; xQ.strokeRect(5,5,W-10,H-10);
-                    xQ.font="bold 60px Courier New"; xQ.textAlign="center"; xQ.textBaseline="middle"; xQ.fillStyle="#f1c40f"; 
-                    this.wrapText(xQ, problem.q, W/2, H/2 - 40, W - 80, 70);
+                    xQ.fillStyle="#3e2723"; xQ.fillRect(0,0,W,H); 
+                    xQ.strokeStyle="#f1c40f"; xQ.lineWidth=20; xQ.strokeRect(10,10,W-20,H-20);
+                    xQ.font="bold 120px Courier New"; xQ.textAlign="center"; xQ.textBaseline="middle"; xQ.fillStyle="#f1c40f"; 
+                    this.wrapText(xQ, problem.q, W/2, H/2 - 80, W - 160, 140);
                 }
-                const sprMat = new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cQ)});
+                const texQ = new THREE.CanvasTexture(cQ); texQ.anisotropy = 16; // Wajib Anisotropy
+                const sprMat = new THREE.SpriteMaterial({map:texQ});
                 const spr = new THREE.Sprite(sprMat); spr.scale.set(4,2,1); spr.position.y=3.5; grp.add(spr);
                 return grp;
             }
@@ -614,18 +632,23 @@
             removeTarget(mesh) { this.scene.remove(mesh); this.targets = this.targets.filter(t => t.mesh !== mesh); this.targetCount--; return this.targetCount; }
         }
 
-        // --- 6. GAME APP ---
+        // --- 6. GAME APP (HD INIT) ---
         class GameApp {
             constructor() {
                 this.ui = new UIManager();
                 this.audio = new AudioController();
-                // Play Menu Music Immediately on Load
                 this.audio.playMenuMode();
 
+                // OPTIMALISASI RENDERER UNTUK HP (PENTING!)
                 this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
-                this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-                this.renderer.outputEncoding = THREE.sRGBEncoding; this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.0;
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Max 2x pixel ratio for performance
+                this.renderer.shadowMap.enabled = true; 
+                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                this.renderer.outputEncoding = THREE.sRGBEncoding; 
+                this.renderer.toneMapping = THREE.ACESFilmicToneMapping; 
+                this.renderer.toneMappingExposure = 1.0;
+                
                 document.getElementById('container').appendChild(this.renderer.domElement);
                 this.camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 200);
                 this.player = new Player(this.camera, document.getElementById('touch-controls'), () => this.shoot());
@@ -644,17 +667,11 @@
             startGame(opts) {
                 const name = this.ui.getPlayerName();
                 if(!name) { alert("MOHON MASUKKAN NAMA RANGER!"); return; }
-                
                 this.ui.hideMenu();
-                
-                // Panggil Audio Game Mode sesuai tema
                 this.audio.playGameMode(opts.theme);
                 
-                // RE-INIT WORLD WITH THEME
                 if(this.world) {
-                    while(this.world.scene.children.length > 0){ 
-                        this.world.scene.remove(this.world.scene.children[0]); 
-                    }
+                    while(this.world.scene.children.length > 0){ this.world.scene.remove(this.world.scene.children[0]); }
                 }
                 this.world = new World(100, opts.theme);
                 this.world.scene.add(this.camera);
@@ -663,7 +680,6 @@
                 this.targetSystem.spawnTargets(5, this.world.treePositions, opts.targetMode, opts.questMode);
                 
                 this.camera.position.set(0, 1.7, 0); this.player.pitch = 0; this.player.yaw = 0;
-                
                 this.camera.add(this.player.gunMesh);
 
                 this.isActive = true; this.startTime = performance.now();
@@ -693,17 +709,20 @@
             }
             gameOver() {
                 this.isActive = false; document.exitPointerLock();
-                
-                // Kembali ke Audio Menu
                 this.audio.playMenuMode();
-                
                 setTimeout(() => {
                     const time = ((performance.now()-this.startTime)/1000).toFixed(2);
                     alert(`MISI SELESAI!\nRanger: ${this.ui.getPlayerName()}\nWaktu: ${time} detik`);
                     location.reload();
                 }, 500);
             }
-            onResize() { this.camera.aspect = window.innerWidth / window.innerHeight; this.camera.updateProjectionMatrix(); this.renderer.setSize(window.innerWidth, window.innerHeight); }
+            onResize() { 
+                this.camera.aspect = window.innerWidth / window.innerHeight; 
+                this.camera.updateProjectionMatrix(); 
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                // Penting: Update pixel ratio saat rotate layar
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
+            }
             animate() {
                 requestAnimationFrame(this.animate);
                 const time = performance.now(); const delta = (time - (this.prevTime || time)) / 1000; this.prevTime = time;
