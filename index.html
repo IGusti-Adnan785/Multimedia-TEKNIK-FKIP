@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Math FPS: Operasi Rimba (Ultra HD)</title>
+    <title>Math FPS: Operasi Rimba (Final Grafik Precision)</title>
     <style>
         body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; touch-action: none; color: #eee; }
         #uiLayer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; user-select: none; }
         
-        /* Tombol Musik */
         #musicToggle {
             position: absolute; top: 20px; right: 20px; width: 50px; height: 50px;
             background: rgba(0, 0, 0, 0.6); border: 2px solid #f1c40f; border-radius: 50%;
@@ -18,7 +17,6 @@
         }
         #musicToggle:active { transform: scale(0.9); }
 
-        /* Crosshair */
         #crosshair { 
             position: absolute; top: 50%; left: 50%; width: 4px; height: 4px; 
             background: #ff0000; border-radius: 50%; transform: translate(-50%, -50%); 
@@ -26,7 +24,6 @@
         }
         #crosshair::before { content: ''; position: absolute; top: -12px; left: -12px; width: 24px; height: 24px; border: 2px solid rgba(255, 50, 50, 0.8); border-radius: 50%; box-sizing: border-box; }
 
-        /* Kompas */
         #compass-arrow {
             position: absolute; top: 50%; left: 50%; width: 0; height: 0;
             border-left: 8px solid transparent; border-right: 8px solid transparent;
@@ -35,14 +32,12 @@
             filter: drop-shadow(0 0 8px #00ff00); opacity: 0; transition: opacity 0.3s;
         }
 
-        /* Stats */
         #stats { 
             position: absolute; top: 20px; left: 20px; color: #fff; font-size: 16px; font-weight: 800; 
             background: rgba(0, 0, 0, 0.7); padding: 12px 25px; border-radius: 8px; border-left: 4px solid #f1c40f; backdrop-filter: blur(5px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
-        /* Kontrol Sentuh */
         #touch-controls { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: auto; }
         
         #joystick-base { 
@@ -63,7 +58,6 @@
         }
         #fireButton:active { transform: scale(0.92); background: #a93226; }
 
-        /* Menu Style */
         #menu { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)), url('https://threejs.org/examples/textures/terrain/grasslight-big.jpg'); 
@@ -362,13 +356,12 @@
 
             setupLights() {
                 if (this.theme === 'WARM') {
-                    const ambient = new THREE.AmbientLight(0xffddaa, 0.6); // Lebih terang
+                    const ambient = new THREE.AmbientLight(0xffddaa, 0.6); 
                     this.scene.add(ambient);
                     const hemi = new THREE.HemisphereLight(0xffaa00, 0x553300, 0.5);
                     this.scene.add(hemi);
                     const dir = new THREE.DirectionalLight(0xffaa00, 2.0); 
                     dir.position.set(-80, 30, -60); dir.castShadow = true;
-                    // HD Shadows
                     dir.shadow.mapSize.set(2048, 2048); 
                     this.scene.add(dir);
                 } else {
@@ -378,7 +371,6 @@
                     this.scene.add(hemi);
                     const dir = new THREE.DirectionalLight(0xcceeff, 1.5); 
                     dir.position.set(-80, 30, -60); dir.castShadow = true;
-                    // HD Shadows
                     dir.shadow.mapSize.set(2048, 2048); 
                     this.scene.add(dir);
                 }
@@ -390,8 +382,7 @@
             }
 
             createGround() {
-                // HD Texture Gen
-                const canvas = document.createElement('canvas'); canvas.width=1024; canvas.height=1024; // 1K Texture
+                const canvas = document.createElement('canvas'); canvas.width=1024; canvas.height=1024; 
                 const ctx = canvas.getContext('2d');
                 
                 if (this.theme === 'WARM') {
@@ -407,7 +398,7 @@
                 const tex = new THREE.CanvasTexture(canvas); 
                 tex.wrapS = tex.wrapT = THREE.RepeatWrapping; 
                 tex.repeat.set(this.arenaSize/8, this.arenaSize/8); 
-                tex.anisotropy = 16; // Tajam di kejauhan
+                tex.anisotropy = 16; 
                 
                 const matColor = this.theme === 'WARM' ? 0xffffff : 0xaaaaaa;
                 const mesh = new THREE.Mesh(new THREE.PlaneGeometry(this.arenaSize*2, this.arenaSize*2), new THREE.MeshStandardMaterial({map:tex, roughness:0.9, metalness: 0.1, color: matColor}));
@@ -416,7 +407,7 @@
 
             createForest() {
                 this.treePositions = [];
-                const trunkGeo = new THREE.CylinderGeometry(0.4, 0.6, 3.5, 8); // Lebih detail segmennya
+                const trunkGeo = new THREE.CylinderGeometry(0.4, 0.6, 3.5, 8); 
                 const leafGeo = new THREE.ConeGeometry(2.5, 5.5, 8);
                 
                 let trunkMat, leafMat;
@@ -492,7 +483,7 @@
             }
         }
 
-        // --- 5. TARGET SYSTEM (ULTRA SHARP CANVAS) ---
+        // --- 5. TARGET SYSTEM (ULTRA SHARP CANVAS FIX) ---
         class TargetSystem {
             constructor(scene, arenaSize) {
                 this.scene = scene; this.arenaSize = arenaSize; this.targets = []; this.targetCount = 5;
@@ -505,48 +496,64 @@
             }
             clearTargets() { this.targets.forEach(t => this.scene.remove(t.mesh)); this.targets = []; }
             
-            // GAMBAR GRAFIK SUPER TAJAM (4K Canvas)
+            // GAMBAR GRAFIK SUPER TAJAM (4K Canvas - Edge to Edge)
             drawLinearGraph(ctx, w, h, m, c) {
-                const centerX = w / 2; const centerY = h / 2; const scale = 60; // Scale diperbesar agar jelas
+                const centerX = w / 2;
+                const centerY = h / 2;
                 
+                // SKALA DINAMIS AGAR TIDAK MENUMPUK DI TENGAH
+                // Anggap kita ingin menampilkan rentang x dari -10 sampai 10
+                // Maka 20 unit harus muat di lebar layar (w)
+                const xVisibleRange = 10; 
+                const scale = (w / 2) / (xVisibleRange + 2); // +2 margin
+
                 ctx.fillStyle = "#ffffff"; ctx.fillRect(0,0,w,h);
                 
                 // Grid & Angka (Tebal & Besar)
-                ctx.lineWidth = 2; ctx.strokeStyle = "#cccccc";
-                ctx.fillStyle = "#000000"; ctx.font = "bold 40px Arial"; // Font Besar
+                ctx.lineWidth = 4; ctx.strokeStyle = "#cccccc";
+                ctx.fillStyle = "#000000"; ctx.font = "bold 60px Arial"; // Font Raksasa
                 ctx.textAlign = "center"; ctx.textBaseline = "top"; 
                 
-                for(let i=-9; i<=9; i++) { 
+                // Hitung batas loop grid berdasarkan ukuran layar
+                const xLimit = Math.floor((w / 2) / scale);
+                const yLimit = Math.floor((h / 2) / scale);
+
+                for(let i = -xLimit; i <= xLimit; i++) { 
                     if(i===0) continue; 
                     const x = centerX + (i * scale); 
                     ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); 
-                    ctx.fillText(i, x, centerY + 10); 
+                    ctx.fillText(i, x, centerY + 20); 
                 }
                 
                 ctx.textAlign = "right"; ctx.textBaseline = "middle"; 
-                for(let j=-5; j<=5; j++) { 
+                for(let j = -yLimit; j <= yLimit; j++) { 
                     if(j===0) continue; 
                     const y = centerY - (j * scale); 
                     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); 
-                    ctx.fillText(j, centerX - 15, y); 
+                    ctx.fillText(j, centerX - 20, y); 
                 }
 
                 // Sumbu Utama Tebal Hitam
-                ctx.lineWidth = 6; ctx.strokeStyle = "#000000"; 
+                ctx.lineWidth = 8; ctx.strokeStyle = "#000000"; 
                 ctx.beginPath(); ctx.moveTo(0, centerY); ctx.lineTo(w, centerY); ctx.moveTo(centerX, 0); ctx.lineTo(centerX, h); ctx.stroke();
                 
                 // Label Sumbu
-                ctx.fillStyle = "#000"; ctx.font = "bold 50px Arial"; 
-                ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText("X", w - 20, centerY - 20); 
-                ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText("Y", centerX + 20, 20); 
+                ctx.fillStyle = "#000"; ctx.font = "bold 80px Arial"; 
+                ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText("X", w - 40, centerY - 40); 
+                ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText("Y", centerX + 40, 40); 
                 ctx.textAlign = "right"; ctx.textBaseline = "top"; ctx.fillText("0", centerX - 20, centerY + 20);
 
-                // Garis Linear Merah Tebal
-                ctx.lineWidth = 8; ctx.strokeStyle = "#ff0000"; ctx.beginPath();
-                const x1 = -10; const y1 = m*x1 + c; const x2 = 10; const y2 = m*x2 + c;
-                const cx1 = centerX + (x1 * scale); const cy1 = centerY - (y1 * scale);
-                const cx2 = centerX + (x2 * scale); const cy2 = centerY - (y2 * scale);
-                ctx.moveTo(cx1, cy1); ctx.lineTo(cx2, cy2); ctx.stroke();
+                // Garis Linear Merah Tebal (Full Screen Line)
+                ctx.lineWidth = 12; ctx.strokeStyle = "#ff0000"; ctx.beginPath();
+                // Gambar garis jauh melewati batas layar agar tidak putus
+                const xStart = -xLimit - 5; 
+                const yStart = m * xStart + c;
+                const xEnd = xLimit + 5; 
+                const yEnd = m * xEnd + c;
+
+                const cxStart = centerX + (xStart * scale); const cyStart = centerY - (yStart * scale);
+                const cxEnd = centerX + (xEnd * scale); const cyEnd = centerY - (yEnd * scale);
+                ctx.moveTo(cxStart, cyStart); ctx.lineTo(cxEnd, cyEnd); ctx.stroke();
             }
 
             wrapText(ctx, text, x, y, maxWidth, lineHeight) {
@@ -585,16 +592,16 @@
                     m.position.set(0, 2.0-(i*0.45), 0.62); m.userData = { isTarget: true, val: val, corr: problem.ans, parent: grp }; grp.add(m);
                 });
 
-                // Papan Soal 4K (2048x1024)
-                const cQ=document.createElement('canvas'); const W=2048; const H=1024; cQ.width=W; cQ.height=H; const xQ=cQ.getContext('2d');
+                // Papan Soal 4K (4096x2048)
+                const cQ=document.createElement('canvas'); const W=4096; const H=2048; cQ.width=W; cQ.height=H; const xQ=cQ.getContext('2d');
                 if (problem.type === 'GRAPH') {
                     this.drawLinearGraph(xQ, W, H, problem.params.m, problem.params.c);
                     xQ.font="bold 80px Arial"; xQ.fillStyle="#000"; xQ.textAlign="left"; xQ.fillText(problem.q, 40, 100);
                 } else {
                     xQ.fillStyle="#3e2723"; xQ.fillRect(0,0,W,H); 
                     xQ.strokeStyle="#f1c40f"; xQ.lineWidth=20; xQ.strokeRect(10,10,W-20,H-20);
-                    xQ.font="bold 120px Courier New"; xQ.textAlign="center"; xQ.textBaseline="middle"; xQ.fillStyle="#f1c40f"; 
-                    this.wrapText(xQ, problem.q, W/2, H/2 - 80, W - 160, 140);
+                    xQ.font="bold 200px Courier New"; xQ.textAlign="center"; xQ.textBaseline="middle"; xQ.fillStyle="#f1c40f"; 
+                    this.wrapText(xQ, problem.q, W/2, H/2 - 160, W - 320, 280);
                 }
                 const texQ = new THREE.CanvasTexture(cQ); texQ.anisotropy = 16; // Wajib Anisotropy
                 const sprMat = new THREE.SpriteMaterial({map:texQ});
@@ -642,7 +649,10 @@
                 // OPTIMALISASI RENDERER UNTUK HP (PENTING!)
                 this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
-                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Max 2x pixel ratio for performance
+                
+                // Allow up to 3x pixel ratio for modern phones (Full HD / Retina)
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3)); 
+                
                 this.renderer.shadowMap.enabled = true; 
                 this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
                 this.renderer.outputEncoding = THREE.sRGBEncoding; 
@@ -720,8 +730,8 @@
                 this.camera.aspect = window.innerWidth / window.innerHeight; 
                 this.camera.updateProjectionMatrix(); 
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
-                // Penting: Update pixel ratio saat rotate layar
-                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
+                // Update pixel ratio saat resize/rotate
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3)); 
             }
             animate() {
                 requestAnimationFrame(this.animate);
