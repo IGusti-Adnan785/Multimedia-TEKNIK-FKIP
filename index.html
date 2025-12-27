@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Math FPS: Operasi Rimba (Final Release)</title>
+    <title>Math FPS: Operasi Rimba (3 Modes + Fix)</title>
     <style>
         body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; touch-action: none; color: #eee; }
         #uiLayer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; user-select: none; }
@@ -79,17 +79,23 @@
         .guide-col h4 { margin: 5px 0; color: #aaa; font-size: 12px; text-transform: uppercase; }
         .guide-box ul { padding-left: 20px; margin: 0; font-size: 12px; color: #ccc; line-height: 1.4; }
         
-        .input-group { display: flex; flex-direction: column; align-items: center; width: 100%; }
-        input { padding: 12px; font-size: 16px; text-align: center; margin-bottom: 15px; width: 280px; background: rgba(0,0,0,0.6); border: 2px solid #555; border-radius: 8px; color: #fff; outline: none; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        .input-group { display: flex; flex-direction: column; align-items: center; width: 100%; gap: 15px; }
+        input { padding: 12px; font-size: 16px; text-align: center; width: 280px; background: rgba(0,0,0,0.6); border: 2px solid #555; border-radius: 8px; color: #fff; outline: none; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
         input:focus { border-color: #f1c40f; background: rgba(0,0,0,0.8); box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); }
-        .mode-container { display: flex; gap: 15px; width: 100%; justify-content: center; max-width: 500px; flex-wrap: wrap; }
-        button.mode-btn { flex: 1; min-width: 140px; padding: 15px; font-size: 14px; background: linear-gradient(45deg, #d4ac0d, #a3860a); border: 1px solid #f1c40f; color: #000; border-radius: 8px; font-weight: 900; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        button.mode-btn:hover { background: #f1c40f; box-shadow: 0 0 20px rgba(241, 196, 15, 0.6); }
+        select { padding: 12px; width: 300px; font-size: 16px; background: #222; color: #fff; border: 2px solid #f1c40f; border-radius: 8px; cursor: pointer; outline: none; }
+        
+        #btn-play {
+            margin-top: 10px; padding: 15px 40px; font-size: 18px; 
+            background: linear-gradient(45deg, #d4ac0d, #a3860a); border: 2px solid #fff; color: #fff; border-radius: 50px; 
+            font-weight: 900; cursor: pointer; transition: 0.3s; box-shadow: 0 0 20px rgba(241, 196, 15, 0.6); letter-spacing: 2px;
+        }
+        #btn-play:hover { transform: scale(1.05); background: #f1c40f; color: #000; }
+        
         .hidden { display: none !important; }
 
         @media screen and (max-height: 500px) {
             h1, .guide-box { display: none; }
-            input { margin-bottom: 10px; width: 200px; padding: 8px; }
+            input, select { margin-bottom: 5px; width: 250px; padding: 8px; }
             #menu { justify-content: center; padding-top: 10px; }
         }
     </style>
@@ -98,7 +104,6 @@
     <audio id="bgm" loop>
         <source src="backsound.webm" type="audio/webm">
     </audio>
-
     <audio id="ambience" loop>
         <source src="forest.mp3" type="audio/mp3">
     </audio>
@@ -115,7 +120,6 @@
     
     <div id="menu">
         <h1>OPERASI RIMBA</h1>
-        
         <div class="guide-box">
             <h3>PANDUAN MISI</h3>
             <div class="guide-cols">
@@ -132,23 +136,27 @@
                     <ul>
                         <li><b>GERAK:</b> Tombol W, A, S, D.</li>
                         <li><b>BIDIK:</b> Gerakan Mouse.</li>
-                        <li><b>TEMBAK:</b> Klik Kiri / Spasi.</li>
-                        <li>*Klik layar utk kunci kursor.</li>
+                        <li><b>TEMBAK:</b> Klik Kiri.</li>
                     </ul>
                 </div>
-            </div>
-            <div style="text-align:center; font-size:12px; margin-top:5px; color:#f1c40f;">
-                🧭 <b>PANAH HIJAU</b> menunjukkan arah musuh terdekat.
             </div>
         </div>
 
         <div class="input-group">
             <input type="text" id="playerName" placeholder="KODE NAMA: RANGER" autocomplete="off">
-            <p style="font-size: 12px; color: #aaa; margin: 0 0 10px 0;">PILIH MISI OPERASI:</p>
-            <div class="mode-container">
-                <button class="mode-btn" id="btn-static">TARGET DIAM</button>
-                <button class="mode-btn" id="btn-moving">TARGET BERGERAK</button>
-            </div>
+            
+            <select id="opt-target">
+                <option value="STATIC">🎯 TARGET: DIAM (Latihan)</option>
+                <option value="MOVING">🏃 TARGET: BERGERAK (Pro)</option>
+            </select>
+
+            <select id="opt-quest">
+                <option value="BASIC">🧮 MISI: ALJABAR DASAR (Awal)</option>
+                <option value="TEXT">📚 MISI: FUNGSI LINEAR (Soal)</option>
+                <option value="GRAPH">📈 MISI: FUNGSI LINEAR (Grafik)</option>
+            </select>
+
+            <button id="btn-play">MULAI MISI</button>
         </div>
     </div>
     
@@ -157,120 +165,106 @@
     <script type="module">
         import * as THREE from 'https://unpkg.com/three@0.126.0/build/three.module.js';
 
-        // --- 1. AUDIO CONTROLLER (HYBRID) ---
+        // --- DATABASE SOAL ---
+        const QUESTION_BANK = [
+            // --- 1. SOAL DASAR (BASIC) - Matematika & Aljabar Sederhana ---
+            { type: 'BASIC', q: "2 + 3 x 4 = ?", opts: ["14", "20", "12"], ans: "14" },
+            { type: 'BASIC', q: "15 - 6 : 2 = ?", opts: ["12", "4.5", "9"], ans: "12" },
+            { type: 'BASIC', q: "Nilai x jika 2x = 10", opts: ["5", "20", "8"], ans: "5" },
+            { type: 'BASIC', q: "Nilai x jika x + 7 = 15", opts: ["8", "7", "22"], ans: "8" },
+            { type: 'BASIC', q: "Nilai x jika 3x - 1 = 8", opts: ["3", "2", "4"], ans: "3" },
+            { type: 'BASIC', q: "5 kuadrat adalah?", opts: ["25", "10", "15"], ans: "25" },
+            { type: 'BASIC', q: "Akar dari 64?", opts: ["8", "6", "4"], ans: "8" },
+            { type: 'BASIC', q: "100 dibagi 4?", opts: ["25", "20", "30"], ans: "25" },
+            { type: 'BASIC', q: "f(x)=2x+1, f(3)=?", opts: ["7", "6", "5"], ans: "7" },
+            { type: 'BASIC', q: "f(x)=x-5, f(10)=?", opts: ["5", "15", "-5"], ans: "5" },
+
+            // --- 2. FUNGSI LINEAR TEXT (TEXT) ---
+            { type: 'TEXT', q: "Bentuk umum fungsi linear?", opts: ["y=mx+c", "y=mx^2", "y=1/x"], ans: "y=mx+c" },
+            { type: 'TEXT', q: "Harga 1 roti 3000. Beli x roti?", opts: ["y=3000x", "y=3000+x", "y=x^2"], ans: "y=3000x" },
+            { type: 'TEXT', q: "Parkir 2000 + 1000/jam. x jam?", opts: ["y=1000x+2000", "y=2000x", "y=1000/x"], ans: "y=1000x+2000" },
+            { type: 'TEXT', q: "Taksi awal 8000 + 4000/km. Jarak x km?", opts: ["y=4000x+8000", "y=8000x+4000", "y=12000x"], ans: "y=4000x+8000" },
+            { type: 'TEXT', q: "Biaya sewa sepeda Rp10.000 dan tambahan Rp5.000 setiap jam. Jika disewa x jam, biayanya?", opts: ["y=5000x+10000", "y=10000x+5000", "y=15000x"], ans: "y=5000x+10000" },
+            { type: 'TEXT', q: "Tabungan Dina bertambah Rp50.000 setiap minggu. Total setelah x minggu?", opts: ["y=50000x", "y=x+50000", "y=50x"], ans: "y=50000x" },
+            { type: 'TEXT', q: "Biaya fotokopi Rp500 per lembar dan biaya awal Rp2.000. Rumusnya?", opts: ["y=500x+2000", "y=2000x+500", "y=2500x"], ans: "y=500x+2000" },
+            { type: 'TEXT', q: "y=2x+4. Jika y=16, x=?", opts: ["6", "5", "7"], ans: "6" },
+            { type: 'TEXT', q: "y=5x-3. Jika y=22, x=?", opts: ["5", "4", "6"], ans: "5" },
+            { type: 'TEXT', q: "Gradien dari y=-3x+60?", opts: ["-3", "3", "60"], ans: "-3" },
+            { type: 'TEXT', q: "Gradien dari y=4x+10?", opts: ["4", "10", "-4"], ans: "4" },
+            
+            // --- 3. FUNGSI LINEAR GRAFIK (GRAPH) ---
+            { type: 'GRAPH', q: "Tentukan persamaannya!", params: {m: 2, c: 1}, opts: ["y=2x+1", "y=x+2", "y=2x-1"], ans: "y=2x+1" },
+            { type: 'GRAPH', q: "Tentukan persamaannya!", params: {m: 1, c: 0}, opts: ["y=x", "y=2x", "y=x+1"], ans: "y=x" },
+            { type: 'GRAPH', q: "Tentukan persamaannya!", params: {m: -1, c: 3}, opts: ["y=-x+3", "y=x+3", "y=-x-3"], ans: "y=-x+3" },
+            { type: 'GRAPH', q: "Tentukan persamaannya!", params: {m: 0.5, c: 2}, opts: ["y=0.5x+2", "y=2x+2", "y=x+2"], ans: "y=0.5x+2" },
+            { type: 'GRAPH', q: "Tentukan persamaannya!", params: {m: 3, c: -2}, opts: ["y=3x-2", "y=-2x+3", "y=3x+2"], ans: "y=3x-2" },
+            { type: 'GRAPH', q: "Cari persamaan garis!", params: {m: -2, c: 4}, opts: ["y=-2x+4", "y=2x+4", "y=-4x+2"], ans: "y=-2x+4" },
+            { type: 'GRAPH', q: "Cari persamaan garis!", params: {m: 1, c: -3}, opts: ["y=x-3", "y=3x-1", "y=-x+3"], ans: "y=x-3" }
+        ];
+
+        // --- 1. AUDIO CONTROLLER ---
         class AudioController {
             constructor() {
                 this.ctx = new (window.AudioContext || window.webkitAudioContext)();
                 this.bgm = document.getElementById('bgm');
                 this.ambience = document.getElementById('ambience');
                 this.toggleBtn = document.getElementById('musicToggle');
-                
                 this.isPlaying = false;
-                this.currentState = 'MENU'; // 'MENU' or 'GAME'
-                
+                this.currentState = 'MENU';
                 this.bgm.volume = 1.0;
-                this.ambience.volume = 0.6; // Suara hutan sedikit lebih pelan
-
+                this.ambience.volume = 0.6;
                 this.toggleBtn.onclick = (e) => { e.stopPropagation(); this.toggleMusic(); };
-                
-                // Pre-generate noise buffer untuk tembakan
                 this.gunBuffer = this.createNoiseBuffer();
             }
-
             createNoiseBuffer() {
-                const bufferSize = this.ctx.sampleRate * 2.0; // 2 detik buffer
+                const bufferSize = this.ctx.sampleRate * 2.0;
                 const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
                 const data = buffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) {
-                    data[i] = Math.random() * 2 - 1;
-                }
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
                 return buffer;
             }
-
             toggleMusic() {
                 if (this.ctx.state === 'suspended') this.ctx.resume();
                 this.isPlaying = !this.isPlaying;
                 this.updateTrackState();
             }
-
             updateTrackState() {
                 if(this.isPlaying) {
                     this.toggleBtn.innerText = "🔊";
-                    if(this.currentState === 'MENU') {
-                        this.bgm.play().catch(()=>{});
-                        this.ambience.pause();
-                    } else {
-                        this.bgm.pause();
-                        this.ambience.play().catch(()=>{});
-                    }
+                    if(this.currentState === 'MENU') { this.bgm.play().catch(()=>{}); this.ambience.pause(); } 
+                    else { this.bgm.pause(); this.ambience.play().catch(()=>{}); }
                 } else {
-                    this.toggleBtn.innerText = "🔇";
-                    this.bgm.pause();
-                    this.ambience.pause();
+                    this.toggleBtn.innerText = "🔇"; this.bgm.pause(); this.ambience.pause();
                 }
             }
-
-            switchToGame() {
-                this.currentState = 'GAME';
-                if(this.isPlaying) this.updateTrackState();
+            switchToGame() { 
+                this.currentState = 'GAME'; 
+                if(!this.isPlaying) { 
+                    this.isPlaying = true; 
+                    if (this.ctx.state === 'suspended') this.ctx.resume();
+                }
+                this.updateTrackState();
             }
-
-            switchToMenu() {
-                this.currentState = 'MENU';
-                if(this.isPlaying) this.updateTrackState();
-            }
-
+            switchToMenu() { this.currentState = 'MENU'; if(this.isPlaying) this.updateTrackState(); }
             playGunShot() {
                 if (this.ctx.state === 'suspended') this.ctx.resume();
-                
-                // 1. Noise Source (Ledakan)
-                const noise = this.ctx.createBufferSource();
-                noise.buffer = this.gunBuffer;
-                const noiseFilter = this.ctx.createBiquadFilter();
-                noiseFilter.type = "lowpass";
-                noiseFilter.frequency.value = 1000;
-                const noiseEnv = this.ctx.createGain();
-                
-                noise.connect(noiseFilter);
-                noiseFilter.connect(noiseEnv);
-                noiseEnv.connect(this.ctx.destination);
-                
-                // Envelope Ledakan (Cepat naik, cepat turun)
+                const noise = this.ctx.createBufferSource(); noise.buffer = this.gunBuffer;
+                const filter = this.ctx.createBiquadFilter(); filter.type = "lowpass"; filter.frequency.value = 1000;
+                const env = this.ctx.createGain();
+                noise.connect(filter); filter.connect(env); env.connect(this.ctx.destination);
                 const t = this.ctx.currentTime;
-                noiseEnv.gain.setValueAtTime(0, t);
-                noiseEnv.gain.linearRampToValueAtTime(1, t + 0.01);
-                noiseEnv.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
-                
-                noise.start(t);
-                noise.stop(t + 0.2);
-
-                // 2. Punch (Hentakan Awal)
-                const osc = this.ctx.createOscillator();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(150, t);
-                osc.frequency.exponentialRampToValueAtTime(0.01, t + 0.1);
-                const oscEnv = this.ctx.createGain();
-                oscEnv.gain.setValueAtTime(0.5, t);
-                oscEnv.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
-                
-                osc.connect(oscEnv);
-                oscEnv.connect(this.ctx.destination);
-                osc.start(t);
-                osc.stop(t + 0.1);
+                env.gain.setValueAtTime(0, t); env.gain.linearRampToValueAtTime(1, t + 0.01); env.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+                noise.start(t); noise.stop(t + 0.2);
+                const osc = this.ctx.createOscillator(); osc.type = 'triangle'; osc.frequency.setValueAtTime(150, t); osc.frequency.exponentialRampToValueAtTime(0.01, t + 0.1);
+                const oEnv = this.ctx.createGain(); oEnv.gain.setValueAtTime(0.5, t); oEnv.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+                osc.connect(oEnv); oEnv.connect(this.ctx.destination); osc.start(t); osc.stop(t + 0.1);
             }
-
             playHitSound() {
-                // Suara "Ting!" metalik jika kena
                 if (this.ctx.state === 'suspended') this.ctx.resume();
-                const osc = this.ctx.createOscillator();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.1);
-                const g = this.ctx.createGain();
-                g.gain.setValueAtTime(0.3, this.ctx.currentTime);
-                g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
-                osc.connect(g); g.connect(this.ctx.destination);
-                osc.start(); osc.stop(this.ctx.currentTime + 0.3);
+                const osc = this.ctx.createOscillator(); osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, this.ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.1);
+                const g = this.ctx.createGain(); g.gain.setValueAtTime(0.3, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                osc.connect(g); g.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.3);
             }
         }
 
@@ -282,6 +276,9 @@
                 this.countEl = document.getElementById('targetCount');
                 this.compass = document.getElementById('compass-arrow');
                 this.inputName = document.getElementById('playerName');
+                this.optTarget = document.getElementById('opt-target');
+                this.optQuest = document.getElementById('opt-quest');
+                this.btnPlay = document.getElementById('btn-play');
             }
             hideMenu() { this.menu.classList.add('hidden'); }
             showMenu() { this.menu.classList.remove('hidden'); }
@@ -302,6 +299,7 @@
                 }
             }
             getPlayerName() { return this.inputName.value.trim(); }
+            getOptions() { return { targetMode: this.optTarget.value, questMode: this.optQuest.value }; }
         }
 
         // --- 3. WORLD ---
@@ -352,7 +350,7 @@
             }
         }
 
-        // --- 4. PLAYER & WEAPON UPGRADE ---
+        // --- 4. PLAYER ---
         class Player {
             constructor(camera, domElement, shootCallback) {
                 this.camera = camera;
@@ -363,61 +361,20 @@
                 this.createWeapon();
                 this.setupControls(domElement, shootCallback);
             }
-            
             createWeapon() {
-                // WARNA & MATERIAL
-                const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.4, metalness: 0.8 }); // Hitam Metalik
-                const stockMat = new THREE.MeshStandardMaterial({ color: 0x0d0d0d, roughness: 0.9 }); // Plastik/Kayu Gelap
+                const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.4, metalness: 0.8 });
+                const stockMat = new THREE.MeshStandardMaterial({ color: 0x0d0d0d, roughness: 0.9 });
                 const scopeMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.2, metalness: 0.9 });
-                
-                // 1. MAIN BODY (Kotak utama)
-                const body = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.4), bodyMat); 
-                body.position.z = 0.1; 
-                this.gunMesh.add(body);
-
-                // 2. BARREL (Laras Panjang)
-                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.6, 12), bodyMat); 
-                barrel.rotation.x = -Math.PI/2; 
-                barrel.position.z = -0.4; 
-                this.gunMesh.add(barrel);
-
-                // 3. HANDGUARD (Pelindung Laras)
-                const guard = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.1, 0.35), stockMat);
-                guard.position.z = -0.25;
-                this.gunMesh.add(guard);
-
-                // 4. MAGAZINE (Tempat Peluru - Melengkung dikit visual hack)
-                const mag = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.25, 0.1), stockMat);
-                mag.position.set(0, -0.2, 0.15);
-                mag.rotation.x = 0.2; // Miring dikit
-                this.gunMesh.add(mag);
-
-                // 5. GRIP (Pegangan Tangan)
-                const grip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.18, 0.08), stockMat);
-                grip.position.set(0, -0.15, 0.35);
-                grip.rotation.x = -0.3;
-                this.gunMesh.add(grip);
-
-                // 6. STOCK (Popor Belakang)
-                const stockBase = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.14, 0.3), stockMat);
-                stockBase.position.set(0, -0.05, 0.45);
-                this.gunMesh.add(stockBase);
-
-                // 7. SCOPE (Teropong)
-                const scopeBase = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.04, 0.2), bodyMat);
-                scopeBase.position.set(0, 0.08, 0.1);
-                this.gunMesh.add(scopeBase);
-                
-                const scopeCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.035, 0.25, 12), scopeMat);
-                scopeCyl.rotation.x = -Math.PI/2;
-                scopeCyl.position.set(0, 0.11, 0.1);
-                this.gunMesh.add(scopeCyl);
-
-                // POSISI KAMERA
-                this.gunMesh.position.set(0.25, -0.3, -0.5); 
-                this.camera.add(this.gunMesh);
+                const body = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.4), bodyMat); body.position.z = 0.1; this.gunMesh.add(body);
+                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.6, 12), bodyMat); barrel.rotation.x = -Math.PI/2; barrel.position.z = -0.4; this.gunMesh.add(barrel);
+                const guard = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.1, 0.35), stockMat); guard.position.z = -0.25; this.gunMesh.add(guard);
+                const mag = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.25, 0.1), stockMat); mag.position.set(0, -0.2, 0.15); mag.rotation.x = 0.2; this.gunMesh.add(mag);
+                const grip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.18, 0.08), stockMat); grip.position.set(0, -0.15, 0.35); grip.rotation.x = -0.3; this.gunMesh.add(grip);
+                const stockBase = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.14, 0.3), stockMat); stockBase.position.set(0, -0.05, 0.45); this.gunMesh.add(stockBase);
+                const scopeBase = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.04, 0.2), bodyMat); scopeBase.position.set(0, 0.08, 0.1); this.gunMesh.add(scopeBase);
+                const scopeCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.035, 0.25, 12), scopeMat); scopeCyl.rotation.x = -Math.PI/2; scopeCyl.position.set(0, 0.11, 0.1); this.gunMesh.add(scopeCyl);
+                this.gunMesh.position.set(0.25, -0.3, -0.5); this.camera.add(this.gunMesh);
             }
-
             setupControls(dom, onShoot) {
                 const joyBase = document.getElementById('joystick-base'); const joyStick = document.getElementById('joystick-stick'); const fireBtn = document.getElementById('fireButton');
                 let moveId=null, lookId=null, mx=0, my=0, lx=0, ly=0;
@@ -445,18 +402,44 @@
             }
         }
 
-        // --- 5. TARGET SYSTEM ---
+        // --- 5. TARGET SYSTEM (LOGIKA MODE & GRAFIK LENGKAP) ---
         class TargetSystem {
             constructor(scene, arenaSize) {
                 this.scene = scene; this.arenaSize = arenaSize; this.targets = []; this.targetCount = 5;
                 this.obstacles = [];
             }
-            spawnTargets(count, treePositions, mode) {
+            spawnTargets(count, treePositions, targetMode, questMode) {
                 this.obstacles = treePositions;
                 this.clearTargets(); this.targetCount = count;
-                for(let i=0; i<count; i++) this.spawnSingle(mode);
+                for(let i=0; i<count; i++) this.spawnSingle(targetMode, questMode);
             }
             clearTargets() { this.targets.forEach(t => this.scene.remove(t.mesh)); this.targets = []; }
+            
+            drawLinearGraph(ctx, w, h, m, c) {
+                const centerX = w / 2; const centerY = h / 2; const scale = 30;
+                ctx.fillStyle = "#fff"; ctx.fillRect(0,0,w,h);
+                ctx.strokeStyle = "#e0e0e0"; ctx.lineWidth = 1;
+                ctx.fillStyle = "#666"; ctx.font = "10px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                for(let i=-9; i<=9; i++) { if(i===0) continue; const x = centerX + (i * scale); ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); ctx.fillText(i, x, centerY + 15); }
+                for(let j=-5; j<=5; j++) { if(j===0) continue; const y = centerY - (j * scale); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); ctx.fillText(j, centerX - 15, y); }
+                ctx.strokeStyle = "#000"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, centerY); ctx.lineTo(w, centerY); ctx.moveTo(centerX, 0); ctx.lineTo(centerX, h); ctx.stroke();
+                ctx.fillStyle = "#000"; ctx.font = "bold 12px Arial"; ctx.fillText("X", w - 10, centerY - 10); ctx.fillText("Y", centerX + 10, 10); ctx.fillText("0", centerX - 10, centerY + 15);
+                ctx.strokeStyle = "#ff0000"; ctx.lineWidth = 3; ctx.beginPath();
+                const x1 = -10; const y1 = m*x1 + c; const x2 = 10; const y2 = m*x2 + c;
+                const cx1 = centerX + (x1 * scale); const cy1 = centerY - (y1 * scale);
+                const cx2 = centerX + (x2 * scale); const cy2 = centerY - (y2 * scale);
+                ctx.moveTo(cx1, cy1); ctx.lineTo(cx2, cy2); ctx.stroke();
+            }
+
+            wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+                const words = text.split(' '); let line = '';
+                for(let n = 0; n < words.length; n++) {
+                    const testLine = line + words[n] + ' '; const metrics = ctx.measureText(testLine); const testWidth = metrics.width;
+                    if (testWidth > maxWidth && n > 0) { ctx.fillText(line, x, y); line = words[n] + ' '; y += lineHeight; } else { line = testLine; }
+                }
+                ctx.fillText(line, x, y);
+            }
+
             createStrawMesh(problem) {
                 const grp = new THREE.Group();
                 const cvs = document.createElement('canvas'); cvs.width=64; cvs.height=64; const ctx=cvs.getContext('2d');
@@ -465,26 +448,42 @@
                 const bale = new THREE.Mesh(new THREE.CylinderGeometry(0.6,0.6,1.2,8), mat); bale.position.y=0.6; grp.add(bale);
                 const bale2 = new THREE.Mesh(new THREE.CylinderGeometry(0.6,0.6,1.2,8), mat); bale2.position.y=1.8; grp.add(bale2);
                 
-                problem.opts.forEach((val, i) => {
-                    const c=document.createElement('canvas'); c.width=128; c.height=64; const x=c.getContext('2d');
-                    x.fillStyle='#3e2723'; x.fillRect(0,0,128,64); x.strokeStyle='#2e1e14'; x.lineWidth=4; x.strokeRect(2,2,124,60);
-                    x.font="bold 40px Arial"; x.textAlign="center"; x.textBaseline="middle"; x.strokeStyle='black'; x.lineWidth=4; x.strokeText(val,64,32); x.fillStyle="white"; x.fillText(val,64,32);
+                let shuffledOpts = [...problem.opts].sort(() => Math.random() - 0.5);
+                shuffledOpts.forEach((val, i) => {
+                    // RESOLUSI TINGGI UNTUK JAWABAN (FIX TEXT BLUR/CUT)
+                    const c=document.createElement('canvas'); c.width=256; c.height=64; const x=c.getContext('2d');
+                    x.fillStyle='#3e2723'; x.fillRect(0,0,256,64); x.strokeStyle='#2e1e14'; x.lineWidth=6; x.strokeRect(4,4,248,56);
+                    
+                    // AUTO-FIT TEXT JAWABAN
+                    let fontSize = 40;
+                    x.font = `bold ${fontSize}px Arial`;
+                    while (x.measureText(val).width > 220) { fontSize -= 2; x.font = `bold ${fontSize}px Arial`; }
+                    
+                    x.textAlign="center"; x.textBaseline="middle";
+                    x.strokeStyle='black'; x.lineWidth=4; x.strokeText(val,128,32); x.fillStyle="white"; x.fillText(val,128,32);
+                    
                     const m = new THREE.Mesh(new THREE.BoxGeometry(0.7,0.35,0.05), new THREE.MeshStandardMaterial({map:new THREE.CanvasTexture(c), emissive:0x332211, roughness: 0.8}));
                     m.position.set(0, 2.0-(i*0.45), 0.62); m.userData = { isTarget: true, val: val, corr: problem.ans, parent: grp }; grp.add(m);
                 });
-                const cQ=document.createElement('canvas'); cQ.width=256; cQ.height=64; const xQ=cQ.getContext('2d');
-                xQ.fillStyle="#3e2723"; xQ.fillRect(0,0,256,64); xQ.strokeStyle="#f1c40f"; xQ.lineWidth=4; xQ.strokeRect(2,2,252,60);
-                xQ.font="bold 30px Courier New"; xQ.textAlign="center"; xQ.textBaseline="middle"; xQ.fillStyle="#f1c40f"; xQ.fillText(problem.q,128,32);
+
+                const cQ=document.createElement('canvas'); const W=512; const H=256; cQ.width=W; cQ.height=H; const xQ=cQ.getContext('2d');
+                if (problem.type === 'GRAPH') {
+                    this.drawLinearGraph(xQ, W, H, problem.params.m, problem.params.c);
+                    xQ.font="bold 20px Arial"; xQ.fillStyle="#000"; xQ.textAlign="left"; xQ.fillText(problem.q, 10, 30);
+                } else {
+                    xQ.fillStyle="#3e2723"; xQ.fillRect(0,0,W,H); xQ.strokeStyle="#f1c40f"; xQ.lineWidth=6; xQ.strokeRect(3,3,W-6,H-6);
+                    xQ.font="bold 30px Courier New"; xQ.textAlign="center"; xQ.textBaseline="middle"; xQ.fillStyle="#f1c40f"; 
+                    this.wrapText(xQ, problem.q, W/2, H/2 - 20, W - 40, 35);
+                }
                 const sprMat = new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cQ)});
-                sprMat.onBeforeCompile = (shader) => { shader.fragmentShader = shader.fragmentShader.replace('outgoingLight = diffuseColor.rgb;', 'outgoingLight = diffuseColor.rgb + vec3(0.2, 0.1, 0.0);'); };
-                const spr = new THREE.Sprite(sprMat); spr.scale.set(4,1,1); spr.position.y=3.0; grp.add(spr);
+                const spr = new THREE.Sprite(sprMat); spr.scale.set(4,2,1); spr.position.y=3.5; grp.add(spr);
                 return grp;
             }
-            spawnSingle(mode) {
-                const a=Math.floor(Math.random()*5)+2, b=Math.floor(Math.random()*10)-5, x=Math.floor(Math.random()*5)+1, ans=a*x+b;
-                let opts=[ans]; while(opts.length<3){ let w=ans+(Math.floor(Math.random()*8)-4); if(w!==ans && !opts.includes(w)) opts.push(w); }
-                opts.sort(()=>Math.random()-0.5);
-                const grp = this.createStrawMesh({q:`f(x)=${a}x${b>=0?'+'+b:b},f(${x})`, opts, ans});
+            spawnSingle(targetMode, questMode) {
+                const filteredBank = QUESTION_BANK.filter(q => q.type === questMode);
+                const problem = filteredBank[Math.floor(Math.random() * filteredBank.length)];
+                
+                const grp = this.createStrawMesh(problem);
                 const bound = this.arenaSize - 10;
                 let sx, sz, valid=false, attempt=0;
                 const SAFE_DIST = 6.0; 
@@ -495,7 +494,7 @@
                 }
                 if (!valid) { sx=0; sz=0; }
                 grp.position.set(sx,0,sz); grp.lookAt(0,0,0); this.scene.add(grp);
-                this.targets.push({ mesh: grp, dir: new THREE.Vector3(Math.random()-0.5, 0, Math.random()-0.5).normalize(), speed: mode==='MOVING' ? 0.8+Math.random()*1.2 : 0, mode: mode });
+                this.targets.push({ mesh: grp, dir: new THREE.Vector3(Math.random()-0.5, 0, Math.random()-0.5).normalize(), speed: targetMode==='MOVING' ? 0.8+Math.random()*1.2 : 0, mode: targetMode });
             }
             update(delta) {
                 const L = this.arenaSize - 5;
@@ -504,14 +503,8 @@
                     if(t.mode === 'MOVING') {
                         const nextPos = t.mesh.position.clone().addScaledVector(t.dir, t.speed * delta);
                         let colliding = false;
-                        for(let obs of this.obstacles) {
-                            if(Math.hypot(nextPos.x - obs.x, nextPos.z - obs.z) < TREE_HIT_RADIUS) { colliding = true; break; }
-                        }
-                        if(colliding) {
-                            t.dir.multiplyScalar(-1); t.dir.x += (Math.random()-0.5); t.dir.z += (Math.random()-0.5); t.dir.normalize();
-                        } else {
-                            t.mesh.position.copy(nextPos);
-                        }
+                        for(let obs of this.obstacles) { if(Math.hypot(nextPos.x - obs.x, nextPos.z - obs.z) < TREE_HIT_RADIUS) { colliding = true; break; } }
+                        if(colliding) { t.dir.multiplyScalar(-1); t.dir.x += (Math.random()-0.5); t.dir.z += (Math.random()-0.5); t.dir.normalize(); } else { t.mesh.position.copy(nextPos); }
                         t.mesh.lookAt(t.mesh.position.clone().add(t.dir));
                         if(Math.abs(t.mesh.position.x)>L) t.dir.x*=-1; if(Math.abs(t.mesh.position.z)>L) t.dir.z*=-1;
                     }
@@ -536,23 +529,24 @@
                 this.world.scene.add(this.camera);
                 this.player = new Player(this.camera, document.getElementById('touch-controls'), () => this.shoot());
                 this.isActive = false; this.startTime = 0;
-                document.getElementById('btn-static').onclick = () => this.startGame('STATIC');
-                document.getElementById('btn-moving').onclick = () => this.startGame('MOVING');
+                
+                document.getElementById('btn-play').onclick = () => {
+                    const opts = this.ui.getOptions();
+                    this.startGame(opts.targetMode, opts.questMode);
+                };
+
                 window.addEventListener('resize', () => this.onResize());
                 this.ui.checkPlatform();
                 this.animate = this.animate.bind(this);
                 requestAnimationFrame(this.animate);
             }
-            startGame(mode) {
+            startGame(targetMode, questMode) {
                 const name = this.ui.getPlayerName();
                 if(!name) { alert("MOHON MASUKKAN NAMA RANGER!"); return; }
                 this.ui.hideMenu();
-                
-                // Audio Switch: Menu(OFF) -> Game(ON)
                 this.audio.switchToGame(); 
-                if(!this.audio.isPlaying) this.audio.toggleMusic(); // Paksa nyala jika belum
-
-                this.targetSystem.spawnTargets(5, this.world.treePositions, mode);
+                
+                this.targetSystem.spawnTargets(5, this.world.treePositions, targetMode, questMode);
                 this.camera.position.set(0, 1.7, 0); this.player.pitch = 0; this.player.yaw = 0;
                 this.isActive = true; this.startTime = performance.now();
                 document.body.requestPointerLock();
@@ -572,7 +566,6 @@
                             const sisa = this.targetSystem.removeTarget(parent);
                             if(sisa <= 0) this.gameOver();
                         } else {
-                            // Salah Tembak
                             obj.material.emissive.setHex(0xff0000); setTimeout(()=>obj.material.emissive.setHex(0x332211), 300);
                         }
                         break;
@@ -581,9 +574,7 @@
             }
             gameOver() {
                 this.isActive = false; document.exitPointerLock();
-                // Audio Switch: Game(OFF) -> Menu(ON)
                 this.audio.switchToMenu();
-
                 setTimeout(() => {
                     const time = ((performance.now()-this.startTime)/1000).toFixed(2);
                     alert(`MISI SELESAI!\nRanger: ${this.ui.getPlayerName()}\nWaktu: ${time} detik`);
