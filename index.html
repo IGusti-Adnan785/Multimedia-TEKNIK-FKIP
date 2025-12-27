@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Math FPS: Operasi Rimba (3 Modes + Fix)</title>
+    <title>Math FPS: Operasi Rimba (Final Audio Fix)</title>
     <style>
         body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; touch-action: none; color: #eee; }
         #uiLayer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; user-select: none; }
@@ -60,7 +60,7 @@
 
         #menu { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: linear-gradient(rgba(0,0,0,0.85), rgba(20,10,0,0.95)), url('https://threejs.org/examples/textures/terrain/grasslight-big.jpg'); 
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)), url('https://threejs.org/examples/textures/terrain/grasslight-big.jpg'); 
             background-size: cover; background-position: center;
             display: flex; flex-direction: column; justify-content: center; align-items: center; 
             color: #fff; pointer-events: auto; z-index: 50; padding: 20px; text-align: center; overflow-y: auto; box-sizing: border-box;
@@ -101,11 +101,16 @@
     </style>
 </head>
 <body>
-    <audio id="bgm" loop>
+    <audio id="audio-menu" loop>
         <source src="backsound.webm" type="audio/webm">
     </audio>
-    <audio id="ambience" loop>
+    
+    <audio id="audio-sore" loop>
         <source src="forest.mp3" type="audio/mp3">
+    </audio>
+    
+    <audio id="audio-dingin" loop>
+        <source src="dingin.mp3" type="audio/mp3">
     </audio>
 
     <div id="uiLayer">
@@ -145,6 +150,11 @@
         <div class="input-group">
             <input type="text" id="playerName" placeholder="KODE NAMA: RANGER" autocomplete="off">
             
+            <select id="opt-theme">
+                <option value="WARM">☀️ CUACA: SORE (Hangat)</option>
+                <option value="COLD">❄️ CUACA: DINGIN (Berkabut)</option>
+            </select>
+
             <select id="opt-target">
                 <option value="STATIC">🎯 TARGET: DIAM (Latihan)</option>
                 <option value="MOVING">🏃 TARGET: BERGERAK (Pro)</option>
@@ -167,19 +177,17 @@
 
         // --- DATABASE SOAL ---
         const QUESTION_BANK = [
-            // --- 1. SOAL DASAR (BASIC) - Matematika & Aljabar Sederhana ---
             { type: 'BASIC', q: "2 + 3 x 4 = ?", opts: ["14", "20", "12"], ans: "14" },
             { type: 'BASIC', q: "15 - 6 : 2 = ?", opts: ["12", "4.5", "9"], ans: "12" },
-            { type: 'BASIC', q: "Nilai x jika 2x = 10", opts: ["5", "20", "8"], ans: "5" },
-            { type: 'BASIC', q: "Nilai x jika x + 7 = 15", opts: ["8", "7", "22"], ans: "8" },
-            { type: 'BASIC', q: "Nilai x jika 3x - 1 = 8", opts: ["3", "2", "4"], ans: "3" },
+            { type: 'BASIC', q: "2x = 10, x = ?", opts: ["5", "20", "8"], ans: "5" },
+            { type: 'BASIC', q: "x + 7 = 15, x = ?", opts: ["8", "7", "22"], ans: "8" },
+            { type: 'BASIC', q: "3x - 1 = 8, x = ?", opts: ["3", "2", "4"], ans: "3" },
             { type: 'BASIC', q: "5 kuadrat adalah?", opts: ["25", "10", "15"], ans: "25" },
             { type: 'BASIC', q: "Akar dari 64?", opts: ["8", "6", "4"], ans: "8" },
-            { type: 'BASIC', q: "100 dibagi 4?", opts: ["25", "20", "30"], ans: "25" },
+            { type: 'BASIC', q: "100 : 4 = ?", opts: ["25", "20", "30"], ans: "25" },
             { type: 'BASIC', q: "f(x)=2x+1, f(3)=?", opts: ["7", "6", "5"], ans: "7" },
             { type: 'BASIC', q: "f(x)=x-5, f(10)=?", opts: ["5", "15", "-5"], ans: "5" },
 
-            // --- 2. FUNGSI LINEAR TEXT (TEXT) ---
             { type: 'TEXT', q: "Bentuk umum fungsi linear?", opts: ["y=mx+c", "y=mx^2", "y=1/x"], ans: "y=mx+c" },
             { type: 'TEXT', q: "Harga 1 roti 3000. Beli x roti?", opts: ["y=3000x", "y=3000+x", "y=x^2"], ans: "y=3000x" },
             { type: 'TEXT', q: "Parkir 2000 + 1000/jam. x jam?", opts: ["y=1000x+2000", "y=2000x", "y=1000/x"], ans: "y=1000x+2000" },
@@ -192,7 +200,6 @@
             { type: 'TEXT', q: "Gradien dari y=-3x+60?", opts: ["-3", "3", "60"], ans: "-3" },
             { type: 'TEXT', q: "Gradien dari y=4x+10?", opts: ["4", "10", "-4"], ans: "4" },
             
-            // --- 3. FUNGSI LINEAR GRAFIK (GRAPH) ---
             { type: 'GRAPH', q: "Tentukan persamaannya!", params: {m: 2, c: 1}, opts: ["y=2x+1", "y=x+2", "y=2x-1"], ans: "y=2x+1" },
             { type: 'GRAPH', q: "Tentukan persamaannya!", params: {m: 1, c: 0}, opts: ["y=x", "y=2x", "y=x+1"], ans: "y=x" },
             { type: 'GRAPH', q: "Tentukan persamaannya!", params: {m: -1, c: 3}, opts: ["y=-x+3", "y=x+3", "y=-x-3"], ans: "y=-x+3" },
@@ -202,20 +209,26 @@
             { type: 'GRAPH', q: "Cari persamaan garis!", params: {m: 1, c: -3}, opts: ["y=x-3", "y=3x-1", "y=-x+3"], ans: "y=x-3" }
         ];
 
-        // --- 1. AUDIO CONTROLLER ---
+        // --- 1. AUDIO CONTROLLER (FIXED) ---
         class AudioController {
             constructor() {
                 this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                this.bgm = document.getElementById('bgm');
-                this.ambience = document.getElementById('ambience');
+                
+                // MAPPING FILE AUDIO YANG BENAR
+                this.bgmMenu = document.getElementById('audio-menu');   // backsound.webm
+                this.bgmSore = document.getElementById('audio-sore');   // forest.mp3
+                this.bgmDingin = document.getElementById('audio-dingin'); // dingin.mp3
+                
                 this.toggleBtn = document.getElementById('musicToggle');
+                
                 this.isPlaying = false;
-                this.currentState = 'MENU';
-                this.bgm.volume = 1.0;
-                this.ambience.volume = 0.6;
+                this.currentState = 'MENU'; // 'MENU' | 'GAME'
+                this.currentTheme = 'WARM'; // 'WARM' | 'COLD'
+
                 this.toggleBtn.onclick = (e) => { e.stopPropagation(); this.toggleMusic(); };
                 this.gunBuffer = this.createNoiseBuffer();
             }
+
             createNoiseBuffer() {
                 const bufferSize = this.ctx.sampleRate * 2.0;
                 const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
@@ -223,29 +236,69 @@
                 for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
                 return buffer;
             }
+
             toggleMusic() {
                 if (this.ctx.state === 'suspended') this.ctx.resume();
                 this.isPlaying = !this.isPlaying;
                 this.updateTrackState();
             }
+
+            // LOGIKA PEMUTARAN AUDIO
             updateTrackState() {
                 if(this.isPlaying) {
                     this.toggleBtn.innerText = "🔊";
-                    if(this.currentState === 'MENU') { this.bgm.play().catch(()=>{}); this.ambience.pause(); } 
-                    else { this.bgm.pause(); this.ambience.play().catch(()=>{}); }
+                    
+                    if (this.currentState === 'MENU') {
+                        // MENU: Play backsound.webm, Stop others
+                        this.bgmMenu.play().catch(()=>{});
+                        this.bgmSore.pause();
+                        this.bgmSore.currentTime = 0;
+                        this.bgmDingin.pause();
+                        this.bgmDingin.currentTime = 0;
+                    } 
+                    else if (this.currentState === 'GAME') {
+                        // GAME: Stop Menu
+                        this.bgmMenu.pause();
+                        this.bgmMenu.currentTime = 0;
+
+                        if (this.currentTheme === 'WARM') {
+                            // SORE: Play forest.mp3
+                            this.bgmSore.play().catch(()=>{});
+                            this.bgmDingin.pause();
+                        } else {
+                            // DINGIN: Play dingin.mp3
+                            this.bgmDingin.play().catch(()=>{});
+                            this.bgmSore.pause();
+                        }
+                    }
                 } else {
-                    this.toggleBtn.innerText = "🔇"; this.bgm.pause(); this.ambience.pause();
+                    this.toggleBtn.innerText = "🔇";
+                    this.bgmMenu.pause();
+                    this.bgmSore.pause();
+                    this.bgmDingin.pause();
                 }
             }
-            switchToGame() { 
-                this.currentState = 'GAME'; 
+
+            // Panggil saat masuk Menu
+            playMenuMode() {
+                this.currentState = 'MENU';
+                // Auto play if was playing, or force play if first time
+                if(!this.isPlaying) { this.isPlaying = true; } 
+                this.updateTrackState();
+            }
+
+            // Panggil saat masuk Game
+            playGameMode(theme) {
+                this.currentState = 'GAME';
+                this.currentTheme = theme;
+                // Force play
                 if(!this.isPlaying) { 
                     this.isPlaying = true; 
                     if (this.ctx.state === 'suspended') this.ctx.resume();
                 }
                 this.updateTrackState();
             }
-            switchToMenu() { this.currentState = 'MENU'; if(this.isPlaying) this.updateTrackState(); }
+
             playGunShot() {
                 if (this.ctx.state === 'suspended') this.ctx.resume();
                 const noise = this.ctx.createBufferSource(); noise.buffer = this.gunBuffer;
@@ -276,6 +329,7 @@
                 this.countEl = document.getElementById('targetCount');
                 this.compass = document.getElementById('compass-arrow');
                 this.inputName = document.getElementById('playerName');
+                this.optTheme = document.getElementById('opt-theme');
                 this.optTarget = document.getElementById('opt-target');
                 this.optQuest = document.getElementById('opt-quest');
                 this.btnPlay = document.getElementById('btn-play');
@@ -299,45 +353,100 @@
                 }
             }
             getPlayerName() { return this.inputName.value.trim(); }
-            getOptions() { return { targetMode: this.optTarget.value, questMode: this.optQuest.value }; }
+            getOptions() { return { theme: this.optTheme.value, targetMode: this.optTarget.value, questMode: this.optQuest.value }; }
         }
 
-        // --- 3. WORLD ---
+        // --- 3. WORLD (DUAL THEME ENGINE) ---
         class World {
-            constructor(arenaSize) {
+            constructor(arenaSize, theme) {
                 this.arenaSize = arenaSize;
                 this.scene = new THREE.Scene();
-                const atmosphericColor = 0x2c1e31;
-                this.scene.background = new THREE.Color(atmosphericColor);
-                this.scene.fog = new THREE.Fog(atmosphericColor, 10, 90);
+                this.theme = theme; // 'WARM' or 'COLD'
+                
+                this.setupAtmosphere();
                 this.treePositions = [];
-                this.setupLights(); this.createGround(); this.createForest();
+                this.setupLights(); 
+                this.createGround(); 
+                this.createForest();
             }
+
+            setupAtmosphere() {
+                if (this.theme === 'WARM') {
+                    // SORE HARI (Warm Sunset)
+                    const fogColor = 0xffaa55; 
+                    this.scene.background = new THREE.Color(fogColor);
+                    this.scene.fog = new THREE.Fog(fogColor, 10, 90);
+                } else {
+                    // DINGIN (Cold Foggy)
+                    const fogColor = 0x88aabb; 
+                    this.scene.background = new THREE.Color(fogColor);
+                    this.scene.fog = new THREE.FogExp2(fogColor, 0.02);
+                }
+            }
+
             setupLights() {
-                const ambient = new THREE.AmbientLight(0x111122, 0.2); this.scene.add(ambient);
-                const hemi = new THREE.HemisphereLight(0x443355, 0x111122, 0.3); this.scene.add(hemi);
-                const dir = new THREE.DirectionalLight(0xff7700, 2.5); 
-                dir.position.set(-80, 30, -60); dir.castShadow = true;
+                if (this.theme === 'WARM') {
+                    // Cahaya Matahari Sore
+                    const ambient = new THREE.AmbientLight(0xffddaa, 0.5); 
+                    this.scene.add(ambient);
+                    const hemi = new THREE.HemisphereLight(0xffaa00, 0x553300, 0.4);
+                    this.scene.add(hemi);
+                    const dir = new THREE.DirectionalLight(0xffaa00, 2.0); 
+                    dir.position.set(-80, 30, -60); dir.castShadow = true;
+                    this.scene.add(dir);
+                } else {
+                    // Cahaya Bulan Dingin
+                    const ambient = new THREE.AmbientLight(0x445566, 0.4); 
+                    this.scene.add(ambient);
+                    const hemi = new THREE.HemisphereLight(0x88aaff, 0x223344, 0.5); 
+                    this.scene.add(hemi);
+                    const dir = new THREE.DirectionalLight(0xcceeff, 1.5); 
+                    dir.position.set(-80, 30, -60); dir.castShadow = true;
+                    this.scene.add(dir);
+                }
+                
+                const dir = this.scene.children.find(c => c.isDirectionalLight);
                 dir.shadow.mapSize.set(4096, 4096); 
                 dir.shadow.camera.left = -this.arenaSize; dir.shadow.camera.right = this.arenaSize;
                 dir.shadow.camera.top = this.arenaSize; dir.shadow.camera.bottom = -this.arenaSize;
                 dir.shadow.camera.far = 200; dir.shadow.bias = -0.0001;
-                this.scene.add(dir);
             }
+
             createGround() {
                 const canvas = document.createElement('canvas'); canvas.width=512; canvas.height=512;
                 const ctx = canvas.getContext('2d');
-                ctx.fillStyle = "#1a120d"; ctx.fillRect(0,0,512,512);
-                for(let i=0; i<5000; i++) { ctx.fillStyle = Math.random()>0.5 ? "rgba(0,0,0,0.3)" : "rgba(50,30,20,0.1)"; ctx.fillRect(Math.random()*512, Math.random()*512, 2, 2); }
-                for(let i=0; i<600; i++) { ctx.fillStyle = Math.random()>0.6 ? "#1e3d12" : "#2f4b1f"; ctx.fillRect(Math.random()*512,Math.random()*512,Math.random()*4+2, Math.random()*4+2); }
+                
+                if (this.theme === 'WARM') {
+                    // Rumput Hijau Sore
+                    ctx.fillStyle = "#1a120d"; ctx.fillRect(0,0,512,512);
+                    for(let i=0; i<5000; i++) { ctx.fillStyle = Math.random()>0.5 ? "rgba(0,0,0,0.3)" : "rgba(50,30,20,0.1)"; ctx.fillRect(Math.random()*512, Math.random()*512, 2, 2); }
+                    for(let i=0; i<600; i++) { ctx.fillStyle = Math.random()>0.6 ? "#1e3d12" : "#2f4b1f"; ctx.fillRect(Math.random()*512,Math.random()*512,Math.random()*4+2, Math.random()*4+2); }
+                } else {
+                    // Rumput Gelap Dingin
+                    ctx.fillStyle = "#1a1a22"; ctx.fillRect(0,0,512,512);
+                    for(let i=0; i<5000; i++) { ctx.fillStyle = Math.random()>0.5 ? "rgba(0,0,0,0.4)" : "rgba(30,30,40,0.2)"; ctx.fillRect(Math.random()*512, Math.random()*512, 2, 2); }
+                    for(let i=0; i<600; i++) { ctx.fillStyle = Math.random()>0.6 ? "#112211" : "#1a2b1a"; ctx.fillRect(Math.random()*512,Math.random()*512,Math.random()*4+2, Math.random()*4+2); }
+                }
+
                 const tex = new THREE.CanvasTexture(canvas); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(this.arenaSize/4, this.arenaSize/4); tex.anisotropy = 16;
-                const mesh = new THREE.Mesh(new THREE.PlaneGeometry(this.arenaSize*2, this.arenaSize*2), new THREE.MeshStandardMaterial({map:tex, roughness:1.0, metalness: 0.0}));
+                const matColor = this.theme === 'WARM' ? 0xffffff : 0xaaaaaa;
+                const mesh = new THREE.Mesh(new THREE.PlaneGeometry(this.arenaSize*2, this.arenaSize*2), new THREE.MeshStandardMaterial({map:tex, roughness:0.9, metalness: 0.1, color: matColor}));
                 mesh.rotation.x = -Math.PI/2; mesh.receiveShadow = true; this.scene.add(mesh);
             }
+
             createForest() {
                 this.treePositions = [];
                 const trunkGeo = new THREE.CylinderGeometry(0.4, 0.6, 3.5); const leafGeo = new THREE.ConeGeometry(2.5, 5.5, 7);
-                const trunkMat = new THREE.MeshStandardMaterial({color: 0x2e1e14, roughness: 1.0}); const leafMat = new THREE.MeshStandardMaterial({color: 0x0d2b0f, roughness: 1.0});
+                
+                let trunkMat, leafMat;
+                if (this.theme === 'WARM') {
+                    trunkMat = new THREE.MeshStandardMaterial({color: 0x2e1e14, roughness: 1.0}); 
+                    leafMat = new THREE.MeshStandardMaterial({color: 0x0d2b0f, roughness: 1.0});
+                } else {
+                    trunkMat = new THREE.MeshStandardMaterial({color: 0x221111, roughness: 0.9}); 
+                    leafMat = new THREE.MeshStandardMaterial({color: 0x0a1a0a, roughness: 0.8});
+                }
+
                 for(let i=0; i<150; i++) {
                     const tree = new THREE.Group();
                     const t = new THREE.Mesh(trunkGeo, trunkMat); t.position.y=1.75; t.castShadow=t.receiveShadow=true;
@@ -402,7 +511,7 @@
             }
         }
 
-        // --- 5. TARGET SYSTEM (LOGIKA MODE & GRAFIK LENGKAP) ---
+        // --- 5. TARGET SYSTEM ---
         class TargetSystem {
             constructor(scene, arenaSize) {
                 this.scene = scene; this.arenaSize = arenaSize; this.targets = []; this.targetCount = 5;
@@ -419,11 +528,13 @@
                 const centerX = w / 2; const centerY = h / 2; const scale = 30;
                 ctx.fillStyle = "#fff"; ctx.fillRect(0,0,w,h);
                 ctx.strokeStyle = "#e0e0e0"; ctx.lineWidth = 1;
-                ctx.fillStyle = "#666"; ctx.font = "10px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                for(let i=-9; i<=9; i++) { if(i===0) continue; const x = centerX + (i * scale); ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); ctx.fillText(i, x, centerY + 15); }
-                for(let j=-5; j<=5; j++) { if(j===0) continue; const y = centerY - (j * scale); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); ctx.fillText(j, centerX - 15, y); }
+                ctx.fillStyle = "#666"; ctx.font = "bold 26px Arial"; 
+                ctx.textAlign = "center"; ctx.textBaseline = "top"; 
+                for(let i=-9; i<=9; i++) { if(i===0) continue; const x = centerX + (i * scale); ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); ctx.fillText(i, x, centerY + 8); }
+                ctx.textAlign = "right"; ctx.textBaseline = "middle"; 
+                for(let j=-5; j<=5; j++) { if(j===0) continue; const y = centerY - (j * scale); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); ctx.fillText(j, centerX - 8, y); }
                 ctx.strokeStyle = "#000"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, centerY); ctx.lineTo(w, centerY); ctx.moveTo(centerX, 0); ctx.lineTo(centerX, h); ctx.stroke();
-                ctx.fillStyle = "#000"; ctx.font = "bold 12px Arial"; ctx.fillText("X", w - 10, centerY - 10); ctx.fillText("Y", centerX + 10, 10); ctx.fillText("0", centerX - 10, centerY + 15);
+                ctx.fillStyle = "#000"; ctx.font = "bold 28px Arial"; ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText("X", w - 5, centerY - 5); ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText("Y", centerX + 5, 5); ctx.textAlign = "right"; ctx.textBaseline = "top"; ctx.fillText("0", centerX - 5, centerY + 5);
                 ctx.strokeStyle = "#ff0000"; ctx.lineWidth = 3; ctx.beginPath();
                 const x1 = -10; const y1 = m*x1 + c; const x2 = 10; const y2 = m*x2 + c;
                 const cx1 = centerX + (x1 * scale); const cy1 = centerY - (y1 * scale);
@@ -450,30 +561,23 @@
                 
                 let shuffledOpts = [...problem.opts].sort(() => Math.random() - 0.5);
                 shuffledOpts.forEach((val, i) => {
-                    // RESOLUSI TINGGI UNTUK JAWABAN (FIX TEXT BLUR/CUT)
                     const c=document.createElement('canvas'); c.width=256; c.height=64; const x=c.getContext('2d');
                     x.fillStyle='#3e2723'; x.fillRect(0,0,256,64); x.strokeStyle='#2e1e14'; x.lineWidth=6; x.strokeRect(4,4,248,56);
-                    
-                    // AUTO-FIT TEXT JAWABAN
-                    let fontSize = 40;
-                    x.font = `bold ${fontSize}px Arial`;
-                    while (x.measureText(val).width > 220) { fontSize -= 2; x.font = `bold ${fontSize}px Arial`; }
-                    
-                    x.textAlign="center"; x.textBaseline="middle";
-                    x.strokeStyle='black'; x.lineWidth=4; x.strokeText(val,128,32); x.fillStyle="white"; x.fillText(val,128,32);
-                    
+                    let fontSize = 40; x.font = `bold ${fontSize}px Arial`;
+                    while (x.measureText(val).width > 220 && fontSize > 10) { fontSize -= 2; x.font = `bold ${fontSize}px Arial`; }
+                    x.textAlign="center"; x.textBaseline="middle"; x.strokeStyle='black'; x.lineWidth=4; x.strokeText(val,128,32); x.fillStyle="white"; x.fillText(val,128,32);
                     const m = new THREE.Mesh(new THREE.BoxGeometry(0.7,0.35,0.05), new THREE.MeshStandardMaterial({map:new THREE.CanvasTexture(c), emissive:0x332211, roughness: 0.8}));
                     m.position.set(0, 2.0-(i*0.45), 0.62); m.userData = { isTarget: true, val: val, corr: problem.ans, parent: grp }; grp.add(m);
                 });
 
-                const cQ=document.createElement('canvas'); const W=512; const H=256; cQ.width=W; cQ.height=H; const xQ=cQ.getContext('2d');
+                const cQ=document.createElement('canvas'); const W=1024; const H=512; cQ.width=W; cQ.height=H; const xQ=cQ.getContext('2d');
                 if (problem.type === 'GRAPH') {
                     this.drawLinearGraph(xQ, W, H, problem.params.m, problem.params.c);
-                    xQ.font="bold 20px Arial"; xQ.fillStyle="#000"; xQ.textAlign="left"; xQ.fillText(problem.q, 10, 30);
+                    xQ.font="bold 40px Arial"; xQ.fillStyle="#000"; xQ.textAlign="left"; xQ.fillText(problem.q, 20, 50);
                 } else {
-                    xQ.fillStyle="#3e2723"; xQ.fillRect(0,0,W,H); xQ.strokeStyle="#f1c40f"; xQ.lineWidth=6; xQ.strokeRect(3,3,W-6,H-6);
-                    xQ.font="bold 30px Courier New"; xQ.textAlign="center"; xQ.textBaseline="middle"; xQ.fillStyle="#f1c40f"; 
-                    this.wrapText(xQ, problem.q, W/2, H/2 - 20, W - 40, 35);
+                    xQ.fillStyle="#3e2723"; xQ.fillRect(0,0,W,H); xQ.strokeStyle="#f1c40f"; xQ.lineWidth=10; xQ.strokeRect(5,5,W-10,H-10);
+                    xQ.font="bold 60px Courier New"; xQ.textAlign="center"; xQ.textBaseline="middle"; xQ.fillStyle="#f1c40f"; 
+                    this.wrapText(xQ, problem.q, W/2, H/2 - 40, W - 80, 70);
                 }
                 const sprMat = new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cQ)});
                 const spr = new THREE.Sprite(sprMat); spr.scale.set(4,2,1); spr.position.y=3.5; grp.add(spr);
@@ -482,14 +586,12 @@
             spawnSingle(targetMode, questMode) {
                 const filteredBank = QUESTION_BANK.filter(q => q.type === questMode);
                 const problem = filteredBank[Math.floor(Math.random() * filteredBank.length)];
-                
                 const grp = this.createStrawMesh(problem);
                 const bound = this.arenaSize - 10;
                 let sx, sz, valid=false, attempt=0;
-                const SAFE_DIST = 6.0; 
                 while(!valid && attempt<200) {
                     sx = (Math.random()-0.5)*2*bound; sz = (Math.random()-0.5)*2*bound; valid = true;
-                    for(let t of this.obstacles) { if(Math.hypot(sx-t.x, sz-t.z) < SAFE_DIST) { valid=false; break; } }
+                    for(let t of this.obstacles) { if(Math.hypot(sx-t.x, sz-t.z) < 6.0) { valid=false; break; } }
                     attempt++;
                 }
                 if (!valid) { sx=0; sz=0; }
@@ -498,12 +600,11 @@
             }
             update(delta) {
                 const L = this.arenaSize - 5;
-                const TREE_HIT_RADIUS = 3.0;
                 this.targets.forEach(t => {
                     if(t.mode === 'MOVING') {
                         const nextPos = t.mesh.position.clone().addScaledVector(t.dir, t.speed * delta);
                         let colliding = false;
-                        for(let obs of this.obstacles) { if(Math.hypot(nextPos.x - obs.x, nextPos.z - obs.z) < TREE_HIT_RADIUS) { colliding = true; break; } }
+                        for(let obs of this.obstacles) { if(Math.hypot(nextPos.x - obs.x, nextPos.z - obs.z) < 3.0) { colliding = true; break; } }
                         if(colliding) { t.dir.multiplyScalar(-1); t.dir.x += (Math.random()-0.5); t.dir.z += (Math.random()-0.5); t.dir.normalize(); } else { t.mesh.position.copy(nextPos); }
                         t.mesh.lookAt(t.mesh.position.clone().add(t.dir));
                         if(Math.abs(t.mesh.position.x)>L) t.dir.x*=-1; if(Math.abs(t.mesh.position.z)>L) t.dir.z*=-1;
@@ -518,21 +619,20 @@
             constructor() {
                 this.ui = new UIManager();
                 this.audio = new AudioController();
-                this.world = new World(100);
-                this.targetSystem = new TargetSystem(this.world.scene, 100);
+                // Play Menu Music Immediately on Load
+                this.audio.playMenuMode();
+
                 this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
                 this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-                this.renderer.outputEncoding = THREE.sRGBEncoding; this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.2;
+                this.renderer.outputEncoding = THREE.sRGBEncoding; this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.0;
                 document.getElementById('container').appendChild(this.renderer.domElement);
                 this.camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 200);
-                this.world.scene.add(this.camera);
                 this.player = new Player(this.camera, document.getElementById('touch-controls'), () => this.shoot());
-                this.isActive = false; this.startTime = 0;
                 
                 document.getElementById('btn-play').onclick = () => {
                     const opts = this.ui.getOptions();
-                    this.startGame(opts.targetMode, opts.questMode);
+                    this.startGame(opts);
                 };
 
                 window.addEventListener('resize', () => this.onResize());
@@ -540,17 +640,36 @@
                 this.animate = this.animate.bind(this);
                 requestAnimationFrame(this.animate);
             }
-            startGame(targetMode, questMode) {
+            
+            startGame(opts) {
                 const name = this.ui.getPlayerName();
                 if(!name) { alert("MOHON MASUKKAN NAMA RANGER!"); return; }
-                this.ui.hideMenu();
-                this.audio.switchToGame(); 
                 
-                this.targetSystem.spawnTargets(5, this.world.treePositions, targetMode, questMode);
+                this.ui.hideMenu();
+                
+                // Panggil Audio Game Mode sesuai tema
+                this.audio.playGameMode(opts.theme);
+                
+                // RE-INIT WORLD WITH THEME
+                if(this.world) {
+                    while(this.world.scene.children.length > 0){ 
+                        this.world.scene.remove(this.world.scene.children[0]); 
+                    }
+                }
+                this.world = new World(100, opts.theme);
+                this.world.scene.add(this.camera);
+                
+                this.targetSystem = new TargetSystem(this.world.scene, 100);
+                this.targetSystem.spawnTargets(5, this.world.treePositions, opts.targetMode, opts.questMode);
+                
                 this.camera.position.set(0, 1.7, 0); this.player.pitch = 0; this.player.yaw = 0;
+                
+                this.camera.add(this.player.gunMesh);
+
                 this.isActive = true; this.startTime = performance.now();
                 document.body.requestPointerLock();
             }
+
             shoot() {
                 if(!this.isActive) return;
                 this.audio.playGunShot();
@@ -574,7 +693,10 @@
             }
             gameOver() {
                 this.isActive = false; document.exitPointerLock();
-                this.audio.switchToMenu();
+                
+                // Kembali ke Audio Menu
+                this.audio.playMenuMode();
+                
                 setTimeout(() => {
                     const time = ((performance.now()-this.startTime)/1000).toFixed(2);
                     alert(`MISI SELESAI!\nRanger: ${this.ui.getPlayerName()}\nWaktu: ${time} detik`);
@@ -585,14 +707,14 @@
             animate() {
                 requestAnimationFrame(this.animate);
                 const time = performance.now(); const delta = (time - (this.prevTime || time)) / 1000; this.prevTime = time;
-                if(this.isActive) {
+                if(this.isActive && this.world) {
                     const elapsed = ((time - this.startTime)/1000).toFixed(2);
                     this.ui.updateStats(elapsed, this.targetSystem.targetCount);
                     this.ui.updateCompass(this.camera, this.targetSystem.targets);
                     this.player.update(delta, 100);
                     this.targetSystem.update(delta);
+                    this.renderer.render(this.world.scene, this.camera);
                 }
-                this.renderer.render(this.world.scene, this.camera);
             }
         }
 
